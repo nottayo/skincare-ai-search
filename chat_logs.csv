@@ -1,0 +1,3 @@
+chat_id,session_id,message_type,message_text,timestamp,user_agent,ip_address,user_info
+chat_1752892213776_fc3dw4g1c,,user,hmm,2025-07-18T22:30:16.523513,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892213776_fc3dw4g1c,,bot,"Hey! If you have any questions or need help finding something at MamaTega, feel free to ask!",2025-07-18T22:30:16.523513,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,

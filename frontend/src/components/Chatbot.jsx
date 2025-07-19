@@ -562,6 +562,7 @@ export default function Chatbot() {
     // Generate chat ID for this conversation
     const chatId = sessionId || `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    let apiError = null;
     try {
       const res = await axios.post(API_URL, {
         prompt,
@@ -585,6 +586,7 @@ export default function Chatbot() {
     } catch (err) {
       console.error(err);
       answer = null;
+      apiError = err;
     }
 
     // Check if answer indicates product availability issues or API limits
@@ -606,7 +608,7 @@ export default function Chatbot() {
     
     const needsWhatsApp = availabilityKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
                          apiLimitKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
-                         !answer; // No answer means API error
+                         (answer === null && apiError); // Only if there's an actual API error
     
     if (needsWhatsApp) {
       // Create WhatsApp message with user's question
