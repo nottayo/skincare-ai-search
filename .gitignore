@@ -30,3 +30,9 @@ venv/
 
 # Mac system files
 .DS_Store
+
+# Chat logs and sensitive data
+chat_logs.csv
+*.csv
+logs/
+cart_storage.json

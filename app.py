@@ -31,6 +31,11 @@ from chat_reasoning import (
     apply_behavior_rules
 )
 
+import boto3
+from botocore.exceptions import ClientError
+import pandas as pd
+from io import StringIO
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuration & Logging
 # ──────────────────────────────────────────────────────────────────────────────
@@ -66,6 +71,49 @@ chat_histories = {}   # session_id → chat history
 last_results   = {}   # session_id → last product list
 user_carts = {}       # cart_id → cart data
 cart_counter = 1      # For generating unique cart IDs
+
+# Cart storage - persistent JSON file
+CART_STORAGE_FILE = 'cart_storage.json'
+
+def load_carts_from_storage():
+    """Load cart data from JSON file"""
+    try:
+        if os.path.exists(CART_STORAGE_FILE):
+            with open(CART_STORAGE_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                # Convert string timestamps back to datetime objects
+                for cart_id, cart_data in data.items():
+                    if 'created_at' in cart_data:
+                        cart_data['created_at'] = datetime.fromisoformat(cart_data['created_at'])
+                    if 'updated_at' in cart_data:
+                        cart_data['updated_at'] = datetime.fromisoformat(cart_data['updated_at'])
+                return data
+    except Exception as e:
+        logger.error(f"Error loading carts from storage: {e}")
+    return {}
+
+def save_carts_to_storage():
+    """Save cart data to JSON file"""
+    try:
+        # Convert datetime objects to strings for JSON serialization
+        carts_to_save = {}
+        for cart_id, cart_data in user_carts.items():
+            cart_copy = cart_data.copy()
+            if 'created_at' in cart_copy and isinstance(cart_copy['created_at'], datetime):
+                cart_copy['created_at'] = cart_copy['created_at'].isoformat()
+            if 'updated_at' in cart_copy and isinstance(cart_copy['updated_at'], datetime):
+                cart_copy['updated_at'] = cart_copy['updated_at'].isoformat()
+            carts_to_save[cart_id] = cart_copy
+        
+        with open(CART_STORAGE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(carts_to_save, f, indent=2, ensure_ascii=False)
+        logger.info(f"Saved {len(carts_to_save)} carts to storage")
+    except Exception as e:
+        logger.error(f"Error saving carts to storage: {e}")
+
+# Load existing carts on startup
+user_carts = load_carts_from_storage()
+logger.info(f"Loaded {len(user_carts)} carts from storage")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Preload known brands
@@ -120,8 +168,22 @@ def handle_exception(e):
 # ──────────────────────────────────────────────────────────────────────────────
 # CSV Logging
 # ──────────────────────────────────────────────────────────────────────────────
+def upload_to_s3(file_path, s3_key):
+    """Upload file to S3"""
+    if not s3_client:
+        logger.warning("S3 client not available. Skipping upload.")
+        return False
+    
+    try:
+        s3_client.upload_file(file_path, S3_BUCKET, s3_key)
+        logger.info(f"Successfully uploaded {file_path} to s3://{S3_BUCKET}/{s3_key}")
+        return True
+    except ClientError as e:
+        logger.error(f"Error uploading to S3: {e}")
+        return False
+
 def log_chat_to_csv(chat_id, session_id, message_type, message_text, timestamp, user_info=None):
-    """Log chat messages to CSV file for analysis"""
+    """Log chat messages to CSV file for analysis and upload to S3"""
     csv_file = "chat_logs.csv"
     file_exists = os.path.exists(csv_file)
     
@@ -147,6 +209,39 @@ def log_chat_to_csv(chat_id, session_id, message_type, message_text, timestamp, 
                 request.remote_addr,
                 json.dumps(user_info) if user_info else ''
             ])
+        
+        # Upload to S3 every 10 entries or if file is getting large
+        try:
+            with open(csv_file, 'r', encoding='utf-8') as f:
+                line_count = sum(1 for line in f)
+            
+            # Upload if file has more than 10 lines (including header)
+            if line_count > 10:
+                today = datetime.now().strftime('%Y-%m-%d')
+                s3_key = f'chat-logs/{today}/chat_logs_{today}.csv'
+                if upload_to_s3(csv_file, s3_key):
+                    # Clear local file after successful upload
+                    with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                        writer = csv.writer(f)
+                        writer.writerow([
+                            'chat_id', 'session_id', 'message_type', 'message_text', 
+                            'timestamp', 'user_agent', 'ip_address', 'user_info'
+                        ])
+                        # Keep the latest entry
+                        writer.writerow([
+                            chat_id,
+                            session_id,
+                            message_type,
+                            message_text,
+                            timestamp,
+                            request.headers.get('User-Agent', ''),
+                            request.remote_addr,
+                            json.dumps(user_info) if user_info else ''
+                        ])
+                    logger.info("Local CSV file cleared after S3 upload")
+                    
+        except Exception as e:
+            logger.error(f"Error uploading to S3: {e}")
             
     except Exception as e:
         logger.error(f"Failed to log chat to CSV: {e}")
@@ -395,6 +490,29 @@ STORE_PHONE = "08189880899, 08037133704"  # Store phone numbers for direct calls
 STORE_ADDRESS = "Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos, Nigeria"
 GOOGLE_MAPS_LINK = "https://goo.gl/maps/your_store_map_link"  # Replace with your actual Google Maps link
 
+# S3 Configuration for chat logs
+S3_BUCKET = os.getenv('S3_BUCKET', 'mamatega-chat-logs')
+S3_REGION = os.getenv('S3_REGION', 'us-east-1')
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+# Initialize S3 client
+s3_client = None
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+    try:
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=S3_REGION
+        )
+        logger.info("S3 client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize S3 client: {e}")
+        s3_client = None
+else:
+    logger.warning("AWS credentials not found. Chat logs will be stored locally only.")
+
 def get_store_status():
     now = datetime.now(NIGERIA_TZ)
     weekday = now.weekday()
@@ -480,6 +598,10 @@ def create_cart_page(cart_items, user_info=None):
     }
     
     user_carts[cart_id] = cart_data
+    
+    # Save to persistent storage
+    save_carts_to_storage()
+    
     return cart_id
 
 # 2. Add post-processing to remove numbers/bullets and repeated greetings:
@@ -998,6 +1120,9 @@ def update_cart(cart_id):
         cart_data['updated_at'] = datetime.now(timezone.utc).isoformat()
         
         user_carts[cart_id] = cart_data
+        
+        # Save to persistent storage
+        save_carts_to_storage()
         
         return jsonify({
             'cart_id': cart_id,
