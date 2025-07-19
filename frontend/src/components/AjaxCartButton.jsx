@@ -14,6 +14,36 @@ const AjaxCartButton = ({
   const [cartId, setCartId] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
 
+  // Cookie management functions
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
+  const setCookie = (name, value, days = 365) => {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+  };
+
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+  };
+
+  // Check if cookies are enabled
+  const areCookiesEnabled = () => {
+    try {
+      setCookie('test_cookie', 'test');
+      const enabled = getCookie('test_cookie') === 'test';
+      deleteCookie('test_cookie');
+      return enabled;
+    } catch (e) {
+      return false;
+    }
+  };
+
   // Monitor cart changes
   useEffect(() => {
     const checkCart = () => {
@@ -23,12 +53,23 @@ const AjaxCartButton = ({
           const currentCartItems = cart.items || [];
           setCartItems(currentCartItems);
           
+          // Check if cookies are enabled
+          if (!areCookiesEnabled()) {
+            console.warn('Cookies are disabled. Cart tracking will not work properly.');
+            return;
+          }
+          
+          // Get existing cart ID from cookie
+          const existingCartId = getCookie('mamatega_cart_id');
+          
           // Create or update cart page if items exist
           if (currentCartItems.length > 0) {
-            createOrUpdateCartPage(currentCartItems);
+            createOrUpdateCartPage(currentCartItems, existingCartId);
           } else {
             setCartUrl('');
             setCartId('');
+            // Clear cart ID cookie when cart is empty
+            deleteCookie('mamatega_cart_id');
           }
         })
         .catch(error => {
@@ -45,7 +86,7 @@ const AjaxCartButton = ({
     return () => clearInterval(interval);
   }, []);
 
-  const createOrUpdateCartPage = async (items) => {
+  const createOrUpdateCartPage = async (items, existingCartId = null) => {
     if (items.length === 0) return;
     
     setIsLoading(true);
@@ -55,9 +96,54 @@ const AjaxCartButton = ({
         ? 'http://localhost:10000/api/cart/create'
         : 'https://skincare-ai-backend.onrender.com/api/cart/create';
       
-      // If we already have a cart ID, update it instead of creating new one
-      const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
-      const method = cartId ? 'PUT' : 'POST';
+      // Use existing cart ID if available, otherwise create new one
+      const cartIdToUse = existingCartId || cartId;
+      const endpoint = cartIdToUse ? `/api/cart/${cartIdToUse}/update` : '/api/cart/create';
+      const method = cartIdToUse ? 'PUT' : 'POST';
+      
+      // Enhance cart items with full product details
+      const enhancedItems = await Promise.all(items.map(async (item) => {
+        // Get full product details from Shopify
+        try {
+          const productResponse = await fetch(`/products/${item.handle}.js`);
+          if (productResponse.ok) {
+            const product = await productResponse.json();
+            return {
+              ...item,
+              product_title: product.title,
+              product_description: product.description,
+              product_handle: product.handle,
+              product_url: `${window.location.origin}/products/${product.handle}`,
+              product_image: product.featured_image || product.images?.[0] || null,
+              product_type: product.product_type,
+              product_vendor: product.vendor,
+              variant_title: item.variant_title || '',
+              variant_options: item.variant_options || [],
+              final_price: item.final_price,
+              original_price: item.original_price || item.final_price,
+              quantity: item.quantity,
+              line_price: item.final_line_price || (item.final_price * item.quantity)
+            };
+          }
+        } catch (error) {
+          console.warn('Could not fetch full product details for:', item.handle);
+        }
+        
+        // Fallback to basic item data
+        return {
+          ...item,
+          product_title: item.product_title || item.title,
+          product_handle: item.handle,
+          product_url: item.url || `${window.location.origin}/products/${item.handle}`,
+          product_image: item.featured_image || item.image,
+          variant_title: item.variant_title || '',
+          variant_options: item.variant_options || [],
+          final_price: item.final_price,
+          original_price: item.original_price || item.final_price,
+          quantity: item.quantity,
+          line_price: item.final_line_price || (item.final_price * item.quantity)
+        };
+      }));
       
       const response = await fetch(API_URL.replace('/create', endpoint), {
         method: method,
@@ -65,11 +151,13 @@ const AjaxCartButton = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: items,
+          items: enhancedItems,
           user_info: {
             user_agent: navigator.userAgent,
             timestamp: new Date().toISOString(),
-            source: 'ajax_cart_button'
+            source: 'ajax_cart_button',
+            cart_id: cartIdToUse,
+            cookies_enabled: areCookiesEnabled()
           }
         })
       });
@@ -77,12 +165,17 @@ const AjaxCartButton = ({
       if (response.ok) {
         const cartData = await response.json();
         
-        // If creating new cart, get the cart ID
-        if (!cartId && cartData.cart_id) {
-          setCartId(cartData.cart_id);
+        // If creating new cart, get the cart ID and store in cookie
+        if (!cartIdToUse && cartData.cart_id) {
+          const newCartId = cartData.cart_id;
+          setCartId(newCartId);
+          setCookie('mamatega_cart_id', newCartId);
+        } else if (cartIdToUse) {
+          setCartId(cartIdToUse);
         }
         
-        const fullCartUrl = `${window.location.origin}/cart/${cartId || cartData.cart_id}`;
+        const finalCartId = cartIdToUse || cartData.cart_id;
+        const fullCartUrl = `${window.location.origin}/cart/${finalCartId}`;
         setCartUrl(fullCartUrl);
       }
     } catch (error) {
@@ -118,8 +211,8 @@ const AjaxCartButton = ({
     return cartItems.reduce((total, item) => total + (item.final_price || 0), 0) / 100;
   };
 
-  // Don't render if no items in cart
-  if (cartItems.length === 0) {
+  // Don't render if no items in cart or cookies disabled
+  if (cartItems.length === 0 || !areCookiesEnabled()) {
     return null;
   }
 

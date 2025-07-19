@@ -1104,7 +1104,28 @@ def serve_cart_page(cart_id):
                 transform: translateX(5px);
             }}
             
+            .item-image-link {{
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                margin-right: 20px;
+                flex-shrink: 0;
+            }}
+            
             .item-image {{
+                width: 80px;
+                height: 80px;
+                border-radius: 10px;
+                object-fit: cover;
+                border: 2px solid #e9ecef;
+                transition: transform 0.3s ease;
+            }}
+            
+            .item-image:hover {{
+                transform: scale(1.05);
+            }}
+            
+            .item-image-placeholder {{
                 width: 80px;
                 height: 80px;
                 border-radius: 10px;
@@ -1114,8 +1135,6 @@ def serve_cart_page(cart_id):
                 justify-content: center;
                 color: white;
                 font-size: 2em;
-                margin-right: 20px;
-                flex-shrink: 0;
             }}
             
             .item-details {{
@@ -1127,6 +1146,25 @@ def serve_cart_page(cart_id):
                 font-weight: 600;
                 color: #333;
                 margin-bottom: 5px;
+            }}
+            
+            .item-title a {{
+                color: #667eea;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }}
+            
+            .item-title a:hover {{
+                color: #5a6fd8;
+                text-decoration: underline;
+            }}
+            
+            .item-description {{
+                color: #666;
+                font-size: 0.85em;
+                line-height: 1.4;
+                margin-top: 5px;
+                font-style: italic;
             }}
             
             .item-variant {{
@@ -1238,6 +1276,43 @@ def serve_cart_page(cart_id):
                 line-height: 1.6;
             }}
             
+            .order-instructions {{
+                margin-top: 20px;
+                padding: 20px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                border-left: 4px solid #667eea;
+            }}
+            
+            .order-instructions h4 {{
+                color: white;
+                margin-bottom: 15px;
+                font-size: 1.1em;
+            }}
+            
+            .order-instructions ol {{
+                color: white;
+                line-height: 1.8;
+                margin-bottom: 20px;
+            }}
+            
+            .order-instructions li {{
+                margin-bottom: 8px;
+            }}
+            
+            .contact-options {{
+                background: rgba(255, 255, 255, 0.1);
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 15px;
+            }}
+            
+            .contact-options p {{
+                color: white;
+                margin: 5px 0;
+                font-size: 0.95em;
+            }}
+            
             @media (max-width: 600px) {{
                 .item {{
                     flex-direction: column;
@@ -1284,6 +1359,9 @@ def serve_cart_page(cart_id):
         item_name = item.get('product_title', 'Product')
         item_price = item.get('final_price', 0) / 100  # Convert from cents
         item_quantity = item.get('quantity', 1)
+        item_image = item.get('product_image')
+        item_url = item.get('product_url', '#')
+        item_description = item.get('product_description', '')
         
         # Get variant info
         variant_options = item.get('variant_options', [])
@@ -1293,13 +1371,25 @@ def serve_cart_page(cart_id):
             if valid_variants:
                 variant_text = " - " + ", ".join([f"{opt['name']}: {opt['value']}" for opt in valid_variants])
         
+        # Use actual product image if available, otherwise use placeholder
+        image_html = ""
+        if item_image:
+            image_html = f'<img src="{item_image}" alt="{item_name}" class="item-image">'
+        else:
+            image_html = '<div class="item-image-placeholder">🛍️</div>'
+        
         html += f"""
                 <div class="item">
-                    <div class="item-image">🛍️</div>
+                    <a href="{item_url}" target="_blank" class="item-image-link">
+                        {image_html}
+                    </a>
                     <div class="item-details">
-                        <div class="item-title">{item_name}</div>
+                        <div class="item-title">
+                            <a href="{item_url}" target="_blank">{item_name}</a>
+                        </div>
                         <div class="item-variant">{variant_text}</div>
                         <div class="item-price">${item_price:.2f}</div>
+                        {f'<div class="item-description">{item_description[:100]}{"..." if len(item_description) > 100 else ""}</div>' if item_description else ''}
                     </div>
                     <div class="item-quantity">Qty: {item_quantity}</div>
                 </div>
@@ -1331,6 +1421,23 @@ def serve_cart_page(cart_id):
                 <h3>📍 MamaTega Cosmetics</h3>
                 <p>Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos</p>
                 <p>🕒 Mon–Sat: 8AM–8PM | Sun: 1PM–7PM</p>
+                
+                <div class="order-instructions">
+                    <h4>📋 How to Order:</h4>
+                    <ol>
+                        <li><strong>Copy this cart link</strong> using the button above</li>
+                        <li><strong>Open WhatsApp</strong> and message us at +234 818 988 0899</li>
+                        <li><strong>Paste the cart link</strong> in your message</li>
+                        <li><strong>Add any special requests</strong> or questions</li>
+                        <li><strong>We'll confirm your order</strong> and arrange delivery</li>
+                    </ol>
+                    
+                    <div class="contact-options">
+                        <p><strong>📱 WhatsApp:</strong> +234 818 988 0899</p>
+                        <p><strong>📸 Instagram:</strong> @mamategacosmeticsandspa</p>
+                        <p><strong>🏪 Visit us:</strong> Tejuosho Ultra Modern Shopping Centre</p>
+                    </div>
+                </div>
             </div>
         </div>
         
