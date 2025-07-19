@@ -175,17 +175,18 @@ export default function Chatbot() {
             const itemUrls = cart.items.map(item => item.url);
             const numberedItems = itemNames.map((item, index) => `${index + 1}. [${item}](${itemUrls[index]})`).join('\n');
             
-            // Create WhatsApp message with cart items
+            // Create WhatsApp and Instagram messages with cart items
             const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
             const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
+            const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
             
-            // Array of varied cart messages with links and WhatsApp option
+            // Array of varied cart messages with links and both WhatsApp & Instagram options
             const cartMessages = [
-              `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nWould you like me to connect you to WhatsApp for personalized assistance? [Click here to chat on WhatsApp](${whatsappLink})`,
-              `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect with us on WhatsApp](${whatsappLink})`,
-              `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support, [chat with us on WhatsApp](${whatsappLink})`,
-              `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message us on WhatsApp](${whatsappLink})`,
-              `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance, [reach out on WhatsApp](${whatsappLink})`
+              `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nNeed personalized assistance? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})`,
+              `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect on WhatsApp](${whatsappLink}) or [DM on Instagram](${instagramLink})`,
+              `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support: [WhatsApp](${whatsappLink}) | [Instagram DM](${instagramLink})`,
+              `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message on WhatsApp](${whatsappLink}) or [Instagram](${instagramLink})`,
+              `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance: [WhatsApp](${whatsappLink}) | [Instagram](${instagramLink})`
             ];
             
             // Pick a random message
@@ -273,6 +274,15 @@ export default function Chatbot() {
     window.open(whatsappLink, '_blank');
   };
 
+  // Function to handle Instagram DM connection
+  const connectToInstagram = (message = '') => {
+    const defaultMessage = 'Hi MamaTega! I need help with my order.';
+    const instagramMessage = message || defaultMessage;
+    // Instagram DM URL format: https://www.instagram.com/direct/t/username/
+    const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
+    window.open(instagramLink, '_blank');
+  };
+
   const sendMessage = async (preset) => {
     const prompt = (preset !== undefined ? preset : input).trim();
     if (!prompt) return;
@@ -353,10 +363,15 @@ export default function Chatbot() {
       answer = null;
     }
 
-    // Check if user wants to connect to WhatsApp (after getting response)
+    // Check if user wants to connect to WhatsApp or Instagram (after getting response)
     const lowerPrompt = prompt.toLowerCase();
-    const whatsappKeywords = ['whatsapp', 'whats app', 'connect', 'message', 'chat', 'contact', 'help'];
+    const whatsappKeywords = ['whatsapp', 'whats app', 'wa'];
+    const instagramKeywords = ['instagram', 'insta', 'ig', 'dm'];
+    const generalContactKeywords = ['connect', 'message', 'chat', 'contact', 'help'];
+    
     const isWhatsAppRequest = whatsappKeywords.some(keyword => lowerPrompt.includes(keyword));
+    const isInstagramRequest = instagramKeywords.some(keyword => lowerPrompt.includes(keyword));
+    const isGeneralContactRequest = generalContactKeywords.some(keyword => lowerPrompt.includes(keyword));
     
     // Check if this is a response to a cart message
     const lastBotMessage = messages.filter(m => m.type === 'bot').pop();
@@ -371,10 +386,31 @@ export default function Chatbot() {
       
       // Add a confirmation message
       answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
+    } else if (isInstagramRequest && isCartResponse) {
+      // Get cart items for Instagram message
+      const cartItems = lastBotMessage.cartItems || [];
+      const itemNames = cartItems.map(item => item.product_title);
+      const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+      connectToInstagram(instagramMessage);
+      
+      // Add a confirmation message
+      answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
     } else if (isWhatsAppRequest) {
       // General WhatsApp request
       connectToWhatsApp();
       answer = "Great! I've opened WhatsApp for you. You can now chat directly with our team! 📱";
+    } else if (isInstagramRequest) {
+      // General Instagram request
+      connectToInstagram();
+      answer = "Great! I've opened Instagram DM for you. You can now message our team directly! 📸";
+    } else if (isGeneralContactRequest && isCartResponse) {
+      // General contact request with cart - offer both options
+      const cartItems = lastBotMessage.cartItems || [];
+      const itemNames = cartItems.map(item => item.product_title);
+      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+      connectToWhatsApp(whatsappMessage);
+      
+      answer = "I've opened WhatsApp for you with your cart items! You can also reach us on Instagram DM if you prefer. 📱📸";
     }
 
     clearTimeout(waitingTimeout);
