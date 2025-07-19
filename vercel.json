@@ -9,14 +9,22 @@
       }
     },
     {
-      "src": "backend/api/**/*.js",
+      "src": "backend/api/cart.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "backend/api/ai-search.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/backend/api/$1"
+      "src": "/api/cart",
+      "dest": "/backend/api/cart.js"
+    },
+    {
+      "src": "/api/ai-search",
+      "dest": "/backend/api/ai-search.js"
     },
     {
       "src": "/(.*)",
@@ -30,5 +38,6 @@
     "backend/api/ai-search.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "ignoreCommand": "echo 'Skipping Python files'"
 } 

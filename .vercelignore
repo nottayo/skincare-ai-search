@@ -1,0 +1,10 @@
+# Ignore Python files and backend folder (except API functions)
+backend/*.py
+backend/requirements.txt
+backend/*.json
+backend/*.csv
+*.py
+requirements.txt
+
+# Keep only the API functions
+!backend/api/*.js 
