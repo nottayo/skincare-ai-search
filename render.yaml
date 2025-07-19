@@ -12,46 +12,14 @@ services:
         destination: /index.html
     plan: free
 
-  # ── Flask web API ───────────────────────────────────────
-  - type: web
-    name: product-search-api            # shows in Render dashboard
-    runtime: python
-    buildCommand: |
-      pip install -r requirements.txt   # install deps
-    startCommand: |
-      python app.py                     # launches on port 10000
-    envVars:                            # set these in Render UI → Environment
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: SHOPIFY_DOMAIN
-        sync: false
-      - key: SHOPIFY_ADMIN_API
-        sync: false
-      - key: EMBEDDINGS_PATH            # path or S3 URL
-        sync: false
-      - key: AWS_ACCESS_KEY_ID
-        sync: false
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false
-      - key: AWS_DEFAULT_REGION
-        value: us-east-1
-
-    plan: free        # stay on the free tier
-
-    # uncomment if you prefer a free 1 GB disk instead of S3
-    # disk:
-    #   name: embeddings
-    #   mountPath: /var/data
-    #   sizeGB: 1
-
-  # ── Optional background worker to refresh embeddings daily ─────────
-  # - type: worker
-  #   name: embed-batcher
+  # ── Optional: Flask web API (commented out to save build time) ─────────
+  # - type: web
+  #   name: product-search-api
   #   runtime: python
   #   buildCommand: |
   #     pip install -r requirements.txt
   #   startCommand: |
-  #     python generate_embeddings.py && sleep 86400
+  #     python app.py
   #   envVars:
   #     - key: OPENAI_API_KEY
   #       sync: false
@@ -60,7 +28,7 @@ services:
   #     - key: SHOPIFY_ADMIN_API
   #       sync: false
   #     - key: EMBEDDINGS_PATH
-  #       value: s3://my-embeddings-bucket/embeddings.json
+  #       sync: false
   #     - key: AWS_ACCESS_KEY_ID
   #       sync: false
   #     - key: AWS_SECRET_ACCESS_KEY
