@@ -38,6 +38,5 @@
     "backend/api/ai-search.js": {
       "maxDuration": 30
     }
-  },
-  "ignoreCommand": "echo 'Skipping Python files'"
+  }
 } 

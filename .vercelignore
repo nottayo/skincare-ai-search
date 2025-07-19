@@ -1,10 +1,18 @@
-# Ignore Python files and backend folder (except API functions)
+# Ignore all Python files and dependencies
+*.py
+requirements.txt
 backend/*.py
 backend/requirements.txt
 backend/*.json
 backend/*.csv
-*.py
-requirements.txt
+backend/*.md
 
-# Keep only the API functions
-!backend/api/*.js 
+# Ignore node_modules Python files
+node_modules/**/*.py
+
+# Keep only the API functions and frontend
+!backend/api/*.js
+!frontend/**
+!vercel.json
+!package.json
+!package-lock.json 
