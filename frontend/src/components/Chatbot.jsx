@@ -76,6 +76,9 @@ export default function Chatbot() {
   const [cartMessageShown, setCartMessageShown] = useState(false);
   const [whatsAppTimeout, setWhatsAppTimeout] = useState(null);
   const [isDark, setIsDark] = useState(() => document.body.classList.contains('dark-mode'));
+  const [nameAskedBefore, setNameAskedBefore] = useState(() => {
+    return localStorage.getItem('name_asked_before') === 'true';
+  });
   // Keep isDark in sync with <body> class
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -228,6 +231,9 @@ export default function Chatbot() {
     setSuggestions(getRandomSuggestions());
     setSelectedSuggestion(null);
     setShowConversationMenu(false);
+    // Reset name asked flag for new conversation
+    setNameAskedBefore(false);
+    localStorage.removeItem('name_asked_before');
     // Remove the user label from user message bubbles
   };
 
@@ -311,6 +317,7 @@ export default function Chatbot() {
       const res = await axios.post(API_URL, {
         prompt,
         history,
+        nameAskedBefore,
         ...(sessionId && { sessionId }),
       });
       const data = res.data;
@@ -319,6 +326,12 @@ export default function Chatbot() {
       results = data.results || [];
       view_all_link = data.view_all_link || '';
       newSugs = data.suggestions || [];
+      
+      // Check if the AI asked for the name and mark it as asked
+      if (answer && (answer.includes("What may I call you") || answer.includes("What should I call you") || answer.includes("What's your name"))) {
+        setNameAskedBefore(true);
+        localStorage.setItem('name_asked_before', 'true');
+      }
     } catch (err) {
       console.error(err);
       answer = null;

@@ -505,11 +505,19 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
         # 2. Build the messages array for OpenAI
         messages = [{"role": "system", "content": store_info}]
         name = data.get("name", "").strip()
+        name_asked_before = data.get("nameAskedBefore", False)
+        
         if name:
             messages.insert(1, {
                 "role": "system",
                 "content": f"The user's name is {name}. Always greet them by name in your first reply after they provide it (e.g., 'Hi {name}!'), and vary your greetings and follow-ups every time. Never repeat the same greeting or opening message."
             })
+        elif name_asked_before:
+            messages.insert(1, {
+                "role": "system",
+                "content": "The user has been asked for their name before. Do NOT ask for their name again. Respond naturally to their message."
+            })
+        
         for turn in history:
             if turn.get("role") and turn.get("content"):
                 messages.append({"role": turn["role"], "content": turn["content"]})
