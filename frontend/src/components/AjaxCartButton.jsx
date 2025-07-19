@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './DynamicCheckout.css';
+import React, { useState, useEffect } from 'react';
+import './AjaxCartButton.css';
 
-const DynamicCheckout = () => {
+const AjaxCartButton = ({ 
+  buttonText = "Here is my cart", 
+  buttonClass = "ajax-cart-btn",
+  showCartId = true,
+  showTotal = true,
+  position = "fixed" // fixed, inline, or absolute
+}) => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cartUrl, setCartUrl] = useState('');
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [lastCartState, setLastCartState] = useState([]);
   const [cartId, setCartId] = useState('');
-  const intervalRef = useRef(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Monitor cart changes
   useEffect(() => {
@@ -17,21 +21,14 @@ const DynamicCheckout = () => {
         .then(res => res.json())
         .then(cart => {
           const currentCartItems = cart.items || [];
-          const currentCartIds = currentCartItems.map(item => item.id).sort();
-          const lastCartIds = lastCartState.map(item => item.id).sort();
+          setCartItems(currentCartItems);
           
-          // Check if cart actually changed
-          if (JSON.stringify(currentCartIds) !== JSON.stringify(lastCartIds)) {
-            setCartItems(currentCartItems);
-            setLastCartState(currentCartItems);
-            
-            // Create or update cart page if items exist
-            if (currentCartItems.length > 0) {
-              createOrUpdateCartPage(currentCartItems);
-            } else {
-              setCartUrl('');
-              setCartId('');
-            }
+          // Create or update cart page if items exist
+          if (currentCartItems.length > 0) {
+            createOrUpdateCartPage(currentCartItems);
+          } else {
+            setCartUrl('');
+            setCartId('');
           }
         })
         .catch(error => {
@@ -43,14 +40,10 @@ const DynamicCheckout = () => {
     checkCart();
 
     // Set up interval to check cart every 30 seconds
-    intervalRef.current = setInterval(checkCart, 30000);
+    const interval = setInterval(checkCart, 30000);
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [lastCartState]);
+    return () => clearInterval(interval);
+  }, []);
 
   const createOrUpdateCartPage = async (items) => {
     if (items.length === 0) return;
@@ -76,7 +69,7 @@ const DynamicCheckout = () => {
           user_info: {
             user_agent: navigator.userAgent,
             timestamp: new Date().toISOString(),
-            source: 'dynamic_checkout_widget'
+            source: 'ajax_cart_button'
           }
         })
       });
@@ -99,7 +92,7 @@ const DynamicCheckout = () => {
     }
   };
 
-  const handleCheckoutClick = () => {
+  const handleClick = () => {
     if (cartUrl) {
       window.open(cartUrl, '_blank');
     }
@@ -130,21 +123,23 @@ const DynamicCheckout = () => {
     return null;
   }
 
+  const containerClass = `ajax-cart-container ${position}`;
+
   return (
-    <div className="dynamic-checkout-widget">
-      <div className="checkout-button-container">
+    <div className={containerClass}>
+      <div className="ajax-cart-content">
         <button 
-          className="dynamic-checkout-btn"
-          onClick={handleCheckoutClick}
+          className={buttonClass}
+          onClick={handleClick}
           disabled={isLoading || !cartUrl}
         >
           {isLoading ? (
             <span className="loading-spinner">⏳</span>
           ) : (
             <>
-              <span className="checkout-icon">🛒</span>
-              <span className="checkout-text">
-                Here is my cart ({getTotalItems()} items)
+              <span className="cart-icon">🛒</span>
+              <span className="cart-text">
+                {buttonText} ({getTotalItems()} items)
               </span>
             </>
           )}
@@ -167,25 +162,21 @@ const DynamicCheckout = () => {
         </div>
       )}
       
-      <div className="cart-summary">
-        <div className="summary-item">
-          <span className="summary-label">Items:</span>
-          <span className="summary-value">{getTotalItems()}</span>
+      {showTotal && (
+        <div className="cart-total">
+          <span className="total-label">Total:</span>
+          <span className="total-value">${getTotalPrice().toFixed(2)}</span>
         </div>
-        <div className="summary-item">
-          <span className="summary-label">Total:</span>
-          <span className="summary-value">${getTotalPrice().toFixed(2)}</span>
-        </div>
-      </div>
+      )}
       
-      {cartId && (
-        <div className="cart-id-display">
-          <span className="cart-id-label">Cart ID:</span>
-          <span className="cart-id-value">{cartId}</span>
+      {showCartId && cartId && (
+        <div className="cart-id">
+          <span className="id-label">ID:</span>
+          <span className="id-value">{cartId}</span>
         </div>
       )}
     </div>
   );
 };
 
-export default DynamicCheckout; 
+export default AjaxCartButton; 

@@ -472,8 +472,11 @@ def create_cart_page(cart_items, user_info=None):
         'items': cart_items,
         'total_price': total_price,
         'created_at': datetime.now(timezone.utc).isoformat(),
+        'updated_at': datetime.now(timezone.utc).isoformat(),
         'user_info': user_info or {},
-        'item_count': len(cart_items)
+        'item_count': len(cart_items),
+        'never_expires': True,  # Cart pages never expire
+        'persistent': True      # Links are persistent
     }
     
     user_carts[cart_id] = cart_data
@@ -1061,6 +1064,27 @@ def serve_cart_page(cart_id):
                 font-size: 1.2em;
                 opacity: 0.9;
                 font-family: monospace;
+                margin-bottom: 10px;
+            }}
+            
+            .cart-info {{
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                align-items: center;
+            }}
+            
+            .persistent-badge {{
+                background: rgba(255, 255, 255, 0.2);
+                padding: 5px 12px;
+                border-radius: 15px;
+                font-size: 0.9em;
+                font-weight: 600;
+            }}
+            
+            .updated-info {{
+                font-size: 0.8em;
+                opacity: 0.8;
             }}
             
             .cart-items {{
@@ -1246,6 +1270,10 @@ def serve_cart_page(cart_id):
             <div class="cart-header">
                 <h1>🛒 My Cart</h1>
                 <div class="cart-id">{cart_id}</div>
+                <div class="cart-info">
+                    <span class="persistent-badge">🔗 Persistent Link</span>
+                    <span class="updated-info">Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}</span>
+                </div>
             </div>
             
             <div class="cart-items">
