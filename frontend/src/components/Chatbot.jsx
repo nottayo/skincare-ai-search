@@ -80,7 +80,7 @@ export default function Chatbot() {
     return localStorage.getItem('name_asked_before') === 'true';
   });
   const [bubbleText, setBubbleText] = useState('Ask MamaTega');
-  const [cartTimeout, setCartTimeout] = useState(null);
+
   const [isExciting, setIsExciting] = useState(false);
   const [inactivityTimeout, setInactivityTimeout] = useState(null);
   // Keep isDark in sync with <body> class
@@ -287,7 +287,13 @@ export default function Chatbot() {
       fetch('/cart.js')
         .then(res => res.json())
         .then(cart => {
-          updateBubbleText(cart.items || []);
+          const currentCartIds = JSON.stringify((cart.items || []).map(item => item.id).sort());
+          const lastCartIds = JSON.parse(localStorage.getItem('last_cart_ids') || '[]');
+          
+          // Only update bubble text if cart actually changed
+          if (currentCartIds !== JSON.stringify(lastCartIds)) {
+            updateBubbleText(cart.items || []);
+          }
         })
         .catch(() => {
           // If cart fetch fails, assume empty cart
@@ -403,47 +409,9 @@ export default function Chatbot() {
       return;
     }
     
-    // Fun attention-grabbing messages for cart items
-    const funMessages = [
-      'Helllllllloooooo! 👋',
-      'Click Me! 💫',
-      'Yassss! ✨',
-      'Love It! 💖',
-      'Perfect Pick! 🎯',
-      'You Got This! 🔥',
-      'Stunning! 💎',
-      'Fabulous! 🦋',
-      'Gorgeous! 🌸',
-      'Incredible! 🚀',
-      'Brilliant! 💫',
-      'Stellar! ⭐',
-      'Epic! 🏆',
-      'Legendary! 👑',
-      'Phenomenal! 🌈',
-      'Outstanding! 🎨',
-      'Spectacular! 🎭',
-      'Hmm, you have good taste! 👌',
-      'You are surely picking the right items! 🎯',
-      'I see you know what you want! 💫'
-    ];
-    
-    // Pick a random fun message
-    const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
-    
-    setBubbleText(randomMessage);
+    // Use only one fun message when items are added to cart
+    setBubbleText('Helllllllloooooo! 👋');
     setIsExciting(true);
-    
-    // Reset timeout for 3 minutes
-    if (cartTimeout) {
-      clearTimeout(cartTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      setBubbleText('Ask MamaTega');
-      setIsExciting(false);
-    }, 3 * 60 * 1000); // 3 minutes
-    
-    setCartTimeout(timeout);
   };
 
   // Function to send inactivity prompts
@@ -477,14 +445,11 @@ export default function Chatbot() {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (cartTimeout) {
-        clearTimeout(cartTimeout);
-      }
       if (inactivityTimeout) {
         clearTimeout(inactivityTimeout);
       }
     };
-  }, [cartTimeout, inactivityTimeout]);
+  }, [inactivityTimeout]);
 
   // Function to handle shopping completion flow
   const handleShoppingComplete = () => {
