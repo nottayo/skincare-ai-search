@@ -82,6 +82,7 @@ export default function Chatbot() {
   const [bubbleText, setBubbleText] = useState('Ask MamaTega');
   const [cartTimeout, setCartTimeout] = useState(null);
   const [isExciting, setIsExciting] = useState(false);
+  const [inactivityTimeout, setInactivityTimeout] = useState(null);
   // Keep isDark in sync with <body> class
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -140,6 +141,13 @@ export default function Chatbot() {
       setTimeout(() => {
         endRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
+      
+      // Set up initial inactivity timeout when chat opens
+      const initialInactivityTimer = setTimeout(() => {
+        sendInactivityPrompt();
+      }, 2 * 60 * 1000); // 2 minutes
+      
+      setInactivityTimeout(initialInactivityTimer);
     }
   }, [minimized]);
 
@@ -324,10 +332,8 @@ export default function Chatbot() {
     // Fun attention-grabbing messages for cart items
     const funMessages = [
       'Helllllllloooooo! 👋',
-      'Great Taste! 🎉',
       'Click Me! 💫',
       'Yassss! ✨',
-      'Amazing Choice! 🌟',
       'Love It! 💖',
       'Perfect Pick! 🎯',
       'You Got This! 🔥',
@@ -335,14 +341,16 @@ export default function Chatbot() {
       'Fabulous! 🦋',
       'Gorgeous! 🌸',
       'Incredible! 🚀',
-      'Fantastic! 🎊',
       'Brilliant! 💫',
       'Stellar! ⭐',
       'Epic! 🏆',
       'Legendary! 👑',
       'Phenomenal! 🌈',
       'Outstanding! 🎨',
-      'Spectacular! 🎭'
+      'Spectacular! 🎭',
+      'Hmm, you have good taste! 👌',
+      'You are surely picking the right items! 🎯',
+      'I see you know what you want! 💫'
     ];
     
     // Pick a random fun message
@@ -364,14 +372,45 @@ export default function Chatbot() {
     setCartTimeout(timeout);
   };
 
+  // Function to send inactivity prompts
+  const sendInactivityPrompt = () => {
+    const inactivityPrompts = [
+      "Ask me any question about products! Like 'Does this work for my skin?' or 'Is this foundation good?' 💁‍♀️",
+      "Need help choosing? Try asking 'What's good for acne?' or 'Which moisturizer is best?' ✨",
+      "Curious about a product? Ask me 'Does this serum work?' or 'Is this cleanser gentle?' 🤔",
+      "Want recommendations? Try 'What's good for dry skin?' or 'Which sunscreen is best?' 🌟",
+      "Have questions? Ask 'Does this help with wrinkles?' or 'Is this good for sensitive skin?' 💫",
+      "Need advice? Try 'What's good for oily skin?' or 'Which toner should I use?' 💎",
+      "Wondering about products? Ask 'Does this help with dark spots?' or 'Is this good for combination skin?' ✨",
+      "Looking for help? Try 'What's good for mature skin?' or 'Which mask is best?' 🌸",
+      "Need guidance? Ask 'Does this help with redness?' or 'Is this good for normal skin?' 💖",
+      "Want suggestions? Try 'What's good for blemishes?' or 'Which eye cream works?' 🎯"
+    ];
+    
+    const randomPrompt = inactivityPrompts[Math.floor(Math.random() * inactivityPrompts.length)];
+    
+    setMessages(m => [
+      ...m,
+      {
+        type: 'bot',
+        text: randomPrompt,
+        time: timeStamp(),
+        isInactivityPrompt: true
+      }
+    ]);
+  };
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (cartTimeout) {
         clearTimeout(cartTimeout);
       }
+      if (inactivityTimeout) {
+        clearTimeout(inactivityTimeout);
+      }
     };
-  }, [cartTimeout]);
+  }, [cartTimeout, inactivityTimeout]);
 
   // Function to handle shopping completion flow
   const handleShoppingComplete = () => {
@@ -423,6 +462,11 @@ export default function Chatbot() {
   const sendMessage = async (preset) => {
     const prompt = (preset !== undefined ? preset : input).trim();
     if (!prompt) return;
+
+    // Clear inactivity timeout when user sends a message
+    if (inactivityTimeout) {
+      clearTimeout(inactivityTimeout);
+    }
 
     // 1) Add user bubble
     setMessages(m => [...m, { type: 'user', text: prompt, time: timeStamp() }]);
@@ -632,6 +676,13 @@ export default function Chatbot() {
     setLoading(false);
     // Focus input after answer
     setTimeout(() => { inputRef.current?.focus(); }, 100);
+
+    // Set up inactivity timeout (2 minutes)
+    const inactivityTimer = setTimeout(() => {
+      sendInactivityPrompt();
+    }, 2 * 60 * 1000); // 2 minutes
+    
+    setInactivityTimeout(inactivityTimer);
   };
 
   return (
