@@ -81,6 +81,7 @@ export default function Chatbot() {
   });
   const [bubbleText, setBubbleText] = useState('Ask MamaTega');
   const [cartTimeout, setCartTimeout] = useState(null);
+  const [isExciting, setIsExciting] = useState(false);
   // Keep isDark in sync with <body> class
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -316,14 +317,39 @@ export default function Chatbot() {
   const updateBubbleText = (cartItems) => {
     if (cartItems.length === 0) {
       setBubbleText('Ask MamaTega');
+      setIsExciting(false);
       return;
     }
     
-    if (cartItems.length === 1) {
-      setBubbleText('Ready to Order');
-    } else {
-      setBubbleText('Great Taste!');
-    }
+    // Fun attention-grabbing messages for cart items
+    const funMessages = [
+      'Helllllllloooooo! 👋',
+      'Great Taste! 🎉',
+      'Click Me! 💫',
+      'Yassss! ✨',
+      'Amazing Choice! 🌟',
+      'Love It! 💖',
+      'Perfect Pick! 🎯',
+      'You Got This! 🔥',
+      'Stunning! 💎',
+      'Fabulous! 🦋',
+      'Gorgeous! 🌸',
+      'Incredible! 🚀',
+      'Fantastic! 🎊',
+      'Brilliant! 💫',
+      'Stellar! ⭐',
+      'Epic! 🏆',
+      'Legendary! 👑',
+      'Phenomenal! 🌈',
+      'Outstanding! 🎨',
+      'Spectacular! 🎭'
+    ];
+    
+    // Pick a random fun message
+    const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
+    
+    setBubbleText(randomMessage);
+    setIsExciting(true);
     
     // Reset timeout for 3 minutes
     if (cartTimeout) {
@@ -332,6 +358,7 @@ export default function Chatbot() {
     
     const timeout = setTimeout(() => {
       setBubbleText('Ask MamaTega');
+      setIsExciting(false);
     }, 3 * 60 * 1000); // 3 minutes
     
     setCartTimeout(timeout);
@@ -612,7 +639,7 @@ export default function Chatbot() {
       {minimized ? (
         <>
           {bubbleVisible && (
-            <div className="chatbot-bubble" onClick={() => setMinimized(false)}>
+            <div className={`chatbot-bubble ${isExciting ? 'exciting' : ''}`} onClick={() => setMinimized(false)}>
               <span className="bubble-icon" role="img" aria-label="shopping bag">🧓🏾</span>
               <span className="bubble-text">{bubbleText}</span>
             </div>
