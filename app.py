@@ -507,6 +507,27 @@ NAME HANDLING:
 - If the user provides their name, remember it and use it in future responses.
 - Only ask for their name ONCE at the very beginning of a brand new conversation.
 
+PRODUCT CATEGORIES WE CARRY:
+We offer a wide range of beauty, skincare, and personal care products including:
+
+Skincare: Acrylic Powder, BB Cream, CC Cream, Cleanser, Cleansing Cloths, Cleansing Gel, Cleansing Wash, Cleansing Wipes, Day Cream, Eye Care, Eye Cream, Face Cream, Face Mask, Face Oil, Face Palette, Face Powder, Face Primer, Face Soap, Face Sponge, Face Spray, Face Wash, Face Wipes, Facial Tissue, Foundation, Glow Booster, Glow Kit, Lip Balm, Lip Care, Lip Corrector, Lip Cream, Lip Definer, Lip Gloss, Lip Ink, Lip Liner, Lip Palette, Lip Pencil, Lip Primer, Lip Stain, Lip Stick, Make Up Box, Make Up Brushes, Make Up Pad, Make Up Primer, Make Up Purse, Make Up Remover, Make Up Sponge, Moisturizer, Night Cream, Nose Mask, Oil Mattifier, Scrub, Serum, Skin Primer, Skin Vitamins, Sun Screen, Toner, Toning Cream, Toning Gel, Toning Lotion, Tube Cream, Tube Gel
+
+Body Care: After Shave, Anti-Perspirant, Bath Accessories, Bath Salt, Bath Towel, Bathrobe, Body Cream, Body Lotion, Body Milk, Body Mist, Body Oil, Body Powder, Body Shampoo, Body Soap, Body Spray, Body Wash, Deodorant, Hand Care, Hand Soap, Shower Cap, Shower Cream, Shower Gel
+
+Hair Care: Beard Care, Bonnet, Bun, Curler, Curling Cream, Curling Lotion, Curling Wax, Detangler, Durag, Extension, Hair Booster, Hair Care, Hair Clip, Hair Cream, Hair Extension, Hair Lotion, Hair Mask, Hair Masque, Hair Net, Hair Oil, Hair Packers, Hair Polish, Hair Spray, Hair Wash, Hair Wax, Head Band, Locs & Twist, Mousse, Relaxer, Shampoo, Sleeping Cap, Straightener, Styling Gel, Texturizer, Treatment, Wig, Wig Cap, Wrap Cap
+
+Makeup: Air Foundation, Blush, Bronzer, Brow Filler, Brow Gel, Brow Palette, Brow Perfecter, Brush, Brush Cleaner, Concealer, Contour, Crown, Eye Brow Definer, Eye Brow Filler, Eye Brow Gel, Eye Brow Shaper, Eye Brow Tint, Eye Lash Curler, Eye Lashes, Eye Liner, Eye Pencil, Eye Primer, Eye Shadow, Eye Shadow Base, Face Definer, Finishing Spray, Glitter Glue, Highlighter, Illuminator, Lash Adhesive, Lash Glue, Lip Balm, Lip Care, Lip Corrector, Lip Cream, Lip Definer, Lip Gloss, Lip Ink, Lip Liner, Lip Palette, Lip Pencil, Lip Primer, Lip Stain, Lip Stick, Luminizer, Mascara, Nail Brush, Nail Care, Nail File, Nail Glue, Nail Lacquer, Nail Lamp, Nail Polish, Nail Polish Remover, Nail Powder, Nail Thickener, Pomade, Powder, Ring Light, Roll On, Scissors, Setting Lotion, Setting Powder, Setting Spray, Shimmer, Stick On Nails, Strobing Stick, Top Coat, Tweezers
+
+Fragrances: Air Freshener, Cologne, Perfume, Perfume Oil, Scented Oil, Unisex Perfume/Cologne
+
+Personal Care: Band, Breast Pads, Breath Spray, Condoms, Diaper, Douche, Ear Piercing, Feeding Bottle, Feminine Wash, Intimate Wash, Lubricant, Massage, Medical Gloves, Mouth Wash, Panty Liner, Tampons, Teeth Whitening, Toe Separators, Tongue Scrapper, Tooth Brush, Tooth Floss, Tooth Paste, Tooth Polish, Underpads, Underwear, Wipes
+
+Nail Care: Base Coat, Nail Brush, Nail Care, Nail File, Nail Glue, Nail Lacquer, Nail Lamp, Nail Polish, Nail Polish Remover, Nail Powder, Nail Thickener, Top Coat
+
+Hair Styling: Boob Tape, Bra Accessories, Clipper, Cloth Clippers, Color And Dye, Comb, Developer, Dye Kit, Glue, Glue Remover, Needle Rollers, Office Pin, Peg, Ponytailers, Rollers, Sharpner, Shaver, Shaving Blade, Shaving Cream, Shaving Foam, Shaving Gel, Shaving Powder, Shaving Solution, Shaving Stick, Trimmer, Wax Stick, Wax Strips, Waxing Gel
+
+Home & Lifestyle: Bag, Baking Soda, Bed Protector, Bed Sheet, Bleach, Candles, Care, Cooking Oil, Costume, Detergent, Diffuser, Diffusser, Dish Washing Liquid, Disinfecting Wipes, Disposable Razor, Dryer, Fan, Floor Cleaner, Foot Care, Fragrance Refill, Frosting Cap, Gift Set, Glasses, Gloves, Humdifier, Insect Net, Insecticide, Key Holder, Kids Clothing, Lamp, Laundry Bag, Lemon Juice, Lighter, Mini Fridge, Mirror, Oven Cleaner, Paper Towel, Pedicure, Pocket Paks, Pocket Tissue, Pom Throw, Pudding, Rechargeable Lamp, Sanitizing Wipes, Scarf, Serviettes, Shoe, Shoe Cleaner, Slippers, Socks, Spa, Spray Bottle, Spray Starch, Table Cloth, Table Fan, Toilet Cleaner, Toilet Paper, Toys, Travel Kit, T shirt, T-Shirt, Vacuum Flask, Vest, Vinegar, Water Bottle, Zip Loc
+
 Store Details:
 - Location: Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos
 - Store Hours: Mon–Sat 8AM–8PM, Sun 1PM–7PM
