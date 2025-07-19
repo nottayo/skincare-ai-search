@@ -26,7 +26,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 200px;
+            min-width: 140px;
             justify-content: center;
         }
         
@@ -35,40 +35,61 @@
             box-shadow: 0 6px 25px rgba(0,0,0,0.2);
         }
         
-        .cart-icon {
-            font-size: 18px;
+        .cart-button:active {
+            transform: translateY(0);
         }
         
-        .item-count {
+        .cart-count {
             background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 2px 8px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 12px;
             font-weight: bold;
+        }
+        
+        .cart-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
         }
     </style>
 </head>
 <body>
     <button class="cart-button" id="cartButton">
-        <span class="cart-icon">🛒</span>
-        <span id="cartText">Here is my cart</span>
-        <span class="item-count" id="itemCount">0</span>
+        <svg class="cart-icon" viewBox="0 0 24 24">
+            <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        <span id="cartText">Cart</span>
+        <span class="cart-count" id="cartCount" style="display: none;">0</span>
     </button>
 
     <script>
-        class SimpleCartButton {
+        class CartButton {
             constructor() {
                 this.button = document.getElementById('cartButton');
                 this.cartText = document.getElementById('cartText');
-                this.itemCount = document.getElementById('itemCount');
-                this.itemCountNum = 0;
+                this.cartCount = document.getElementById('cartCount');
+                this.cartId = null;
+                this.cartItems = [];
                 
                 this.init();
             }
             
             async init() {
-                this.button.addEventListener('click', () => this.handleClick());
+                // Try to get existing cart from Shopify first
                 await this.checkShopifyCart();
+                
+                // If no Shopify cart, create a new one
+                if (!this.cartItems.length) {
+                    await this.createNewCart();
+                }
+                
+                this.updateDisplay();
+                this.button.addEventListener('click', () => this.handleClick());
             }
             
             async checkShopifyCart() {
@@ -77,39 +98,64 @@
                     const response = await fetch('/cart.js');
                     if (response.ok) {
                         const cart = await response.json();
-                        this.itemCountNum = cart.item_count || 0;
-                        this.updateDisplay();
-                        return;
+                        this.cartItems = cart.items || [];
+                        this.cartId = cart.token;
+                        console.log('Found Shopify cart:', cart);
                     }
                 } catch (error) {
-                    console.log('Not on Shopify or cart not available');
+                    console.log('No Shopify cart found, will create new one');
                 }
-                
-                // Fallback: show empty cart
-                this.itemCountNum = 0;
-                this.updateDisplay();
+            }
+            
+            async createNewCart() {
+                try {
+                    // Create new cart via Vercel API
+                    const response = await fetch('/api/cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.cartId = data.cart.id;
+                        this.cartItems = data.cart.items || [];
+                        console.log('Created new cart:', data.cart);
+                    }
+                } catch (error) {
+                    console.error('Error creating cart:', error);
+                }
             }
             
             updateDisplay() {
-                this.itemCount.textContent = this.itemCountNum;
-                this.cartText.textContent = this.itemCountNum === 0 ? 'Here is my cart' : 'View my cart';
+                const itemCount = this.cartItems.length;
+                
+                if (itemCount > 0) {
+                    this.cartText.textContent = `Cart (${itemCount})`;
+                    this.cartCount.textContent = itemCount;
+                    this.cartCount.style.display = 'flex';
+                } else {
+                    this.cartText.textContent = 'Cart';
+                    this.cartCount.style.display = 'none';
+                }
             }
             
             handleClick() {
-                // Open Shopify cart or a simple cart page
-                if (window.Shopify && window.Shopify.theme) {
-                    // On Shopify site - open cart drawer or cart page
-                    window.location.href = '/cart';
+                if (this.cartId) {
+                    // Open cart page with cart ID
+                    const cartUrl = `/cart/${this.cartId}`;
+                    window.open(cartUrl, '_blank');
                 } else {
-                    // Not on Shopify - show a simple message
-                    alert('Cart functionality requires Shopify integration');
+                    // Fallback to Shopify cart
+                    window.open('/cart', '_blank');
                 }
             }
         }
         
         // Initialize cart button when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            new SimpleCartButton();
+            new CartButton();
         });
     </script>
 </body>
