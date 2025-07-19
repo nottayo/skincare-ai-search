@@ -285,17 +285,49 @@ export default function Chatbot() {
 
   // Function to handle shopping completion flow
   const handleShoppingComplete = () => {
-    const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **Visit Store** - Come shop directly at our location\n📱 **WhatsApp** - Order via WhatsApp with payment\n📸 **Instagram** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nWhich option works best for you?`;
-    
-    setMessages(m => [
-      ...m,
-      {
-        type: 'bot',
-        text: orderOptions,
-        time: timeStamp(),
-        isOrderOptions: true
-      }
-    ]);
+    // Get current cart items for WhatsApp message
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        const cartItems = cart.items || [];
+        const itemDetails = cartItems.map(item => 
+          `${item.quantity}x ${item.product_title} - $${(item.final_price / 100).toFixed(2)}`
+        ).join('\n');
+        const totalPrice = (cart.total_price / 100).toFixed(2);
+        
+        const whatsappMessage = `Hi MamaTega! I'd like to complete my order:\n\n${itemDetails}\n\nTotal: $${totalPrice}\n\nCan you help me process this order?`;
+        const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
+        const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
+        
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
+        
+        setMessages(m => [
+          ...m,
+          {
+            type: 'bot',
+            text: orderOptions,
+            time: timeStamp(),
+            isOrderOptions: true,
+            cartItems: cartItems,
+            whatsappLink: whatsappLink,
+            instagramLink: instagramLink
+          }
+        ]);
+      })
+      .catch(() => {
+        // Fallback if cart fetch fails
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamatega_cosmetics/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
+        
+        setMessages(m => [
+          ...m,
+          {
+            type: 'bot',
+            text: orderOptions,
+            time: timeStamp(),
+            isOrderOptions: true
+          }
+        ]);
+      });
   };
 
   const sendMessage = async (preset) => {
@@ -402,23 +434,31 @@ export default function Chatbot() {
       handleShoppingComplete();
       answer = null; // Don't send AI response, use the order options message
     } else if (isWhatsAppRequest && (isCartResponse || isOrderOptionsResponse)) {
-      // Get cart items for WhatsApp message
-      const cartItems = lastBotMessage.cartItems || [];
-      const itemNames = cartItems.map(item => item.product_title);
-      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
-      connectToWhatsApp(whatsappMessage);
-      
-      // Add a confirmation message
-      answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
+      // Use the pre-generated WhatsApp link if available, otherwise create one
+      if (lastBotMessage.whatsappLink) {
+        window.open(lastBotMessage.whatsappLink, '_blank');
+        answer = "Perfect! I've opened WhatsApp for you with your complete order details including quantities and prices. You can now chat directly with our team to complete your purchase! 📱";
+      } else {
+        // Fallback - get cart items for WhatsApp message
+        const cartItems = lastBotMessage.cartItems || [];
+        const itemNames = cartItems.map(item => item.product_title);
+        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+        connectToWhatsApp(whatsappMessage);
+        answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
+      }
     } else if (isInstagramRequest && (isCartResponse || isOrderOptionsResponse)) {
-      // Get cart items for Instagram message
-      const cartItems = lastBotMessage.cartItems || [];
-      const itemNames = cartItems.map(item => item.product_title);
-      const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
-      connectToInstagram(instagramMessage);
-      
-      // Add a confirmation message
-      answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
+      // Use the pre-generated Instagram link if available, otherwise create one
+      if (lastBotMessage.instagramLink) {
+        window.open(lastBotMessage.instagramLink, '_blank');
+        answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly to complete your order! 📸";
+      } else {
+        // Fallback - get cart items for Instagram message
+        const cartItems = lastBotMessage.cartItems || [];
+        const itemNames = cartItems.map(item => item.product_title);
+        const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+        connectToInstagram(instagramMessage);
+        answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
+      }
     } else if (isStoreVisitRequest && isOrderOptionsResponse) {
       // User wants to visit store
       answer = "Great choice! Here's our store information:\n\n📍 **MamaTega Cosmetics Store**\n🕒 **Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n📞 **Phone:** +234 818 988 0899\n\nWe'd love to see you in person! Our team will be happy to help you with your selections and provide personalized recommendations. 🛍️";
