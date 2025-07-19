@@ -1008,132 +1008,13 @@ def update_cart(cart_id):
         logger.error(f"Error updating cart {cart_id}: {e}")
         return jsonify({'error': 'Failed to update cart'}), 500
 
-@app.route('/cart')
 @app.route('/cart/<cart_id>')
-def serve_cart_page(cart_id=None):
-    """Serve cart page - cart ID can come from URL or cookie"""
+def serve_cart_page(cart_id):
+    """Serve the cart page HTML"""
+    if cart_id not in user_carts:
+        return "Cart not found", 404
     
-    # Try to get cart ID from cookie first, then from URL
-    cart_id_from_cookie = request.cookies.get('mamatega_cart_id')
-    final_cart_id = cart_id_from_cookie or cart_id
-    
-    if not final_cart_id:
-        # No cart ID found - show empty cart page
-        return """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Empty Cart - MamaTega Cosmetics</title>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 0;
-                    padding: 20px;
-                }
-                .empty-cart {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 20px;
-                    text-align: center;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                    max-width: 500px;
-                }
-                .empty-cart h1 {
-                    color: #667eea;
-                    margin-bottom: 20px;
-                }
-                .empty-cart p {
-                    color: #666;
-                    margin-bottom: 30px;
-                }
-                .btn {
-                    background: #667eea;
-                    color: white;
-                    padding: 15px 30px;
-                    border: none;
-                    border-radius: 10px;
-                    text-decoration: none;
-                    font-weight: 600;
-                    display: inline-block;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="empty-cart">
-                <h1>🛒 Your Cart is Empty</h1>
-                <p>Add some products to your cart to see them here!</p>
-                <a href="/" class="btn">Continue Shopping</a>
-            </div>
-        </body>
-        </html>
-        """
-    
-    if final_cart_id not in user_carts:
-        # Cart not found - show empty cart page
-        return """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Cart Not Found - MamaTega Cosmetics</title>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 0;
-                    padding: 20px;
-                }
-                .not-found {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 20px;
-                    text-align: center;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                    max-width: 500px;
-                }
-                .not-found h1 {
-                    color: #dc3545;
-                    margin-bottom: 20px;
-                }
-                .not-found p {
-                    color: #666;
-                    margin-bottom: 30px;
-                }
-                .btn {
-                    background: #667eea;
-                    color: white;
-                    padding: 15px 30px;
-                    border: none;
-                    border-radius: 10px;
-                    text-decoration: none;
-                    font-weight: 600;
-                    display: inline-block;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="not-found">
-                <h1>❌ Cart Not Found</h1>
-                <p>This cart link has expired or doesn't exist. Please add items to your cart again.</p>
-                <a href="/" class="btn">Start Shopping</a>
-            </div>
-        </body>
-        </html>
-        """
-    
-    cart_data = user_carts[final_cart_id]
+    cart_data = user_carts[cart_id]
     
     # Generate beautiful HTML for the cart page
     html = f"""
@@ -1467,7 +1348,7 @@ def serve_cart_page(cart_id=None):
         <div class="cart-container">
             <div class="cart-header">
                 <h1>🛒 My Cart</h1>
-                <div class="cart-id">ID: {final_cart_id}</div>
+                <div class="cart-id">ID: {cart_id}</div>
                 <div class="cart-info">
                     <span class="persistent-badge">🔗 Persistent Link</span>
                     <span class="updated-info">Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}</span>
@@ -1528,7 +1409,7 @@ def serve_cart_page(cart_id=None):
                 <div class="total-amount">${total_price:.2f}</div>
                 
                 <div class="action-buttons">
-                    <a href="https://wa.me/2348189880899?text=Hi MamaTega! I have items in my cart: {final_cart_id}. Can you help me complete my order?" class="btn btn-whatsapp">
+                    <a href="https://wa.me/2348189880899?text=Hi MamaTega! I have items in my cart: {cart_id}. Can you help me complete my order?" class="btn btn-whatsapp">
                         📱 WhatsApp
                     </a>
                     <a href="https://www.instagram.com/mamategacosmeticsandspa/" class="btn btn-instagram">

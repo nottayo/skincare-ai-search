@@ -175,8 +175,8 @@ const AjaxCartButton = ({
         }
         
         const finalCartId = cartIdToUse || cartData.cart_id;
-        // Use simple /cart URL since cart ID is stored in cookie
-        const fullCartUrl = `${window.location.origin}/cart`;
+        // Use URL-based cart ID for public sharing
+        const fullCartUrl = `${window.location.origin}/cart/${finalCartId}`;
         setCartUrl(fullCartUrl);
       }
     } catch (error) {
