@@ -493,6 +493,9 @@ IMPORTANT RULES:
 - Never use bulleted lists or numbered lists for product recommendations—use paragraphs or line breaks ONLY.
 - NEVER greet the user except on the VERY FIRST message of a new conversation.
 - Do not repeat contact info in every answer; only provide it if the user explicitly asks.
+- NEVER say "If I can't answer your question, you can reach out to us via WhatsApp" or similar fallback messages.
+- NEVER generate WhatsApp fallback messages - this is handled by the frontend after 5 minutes of inactivity.
+- Focus on answering the user's question directly without mentioning contact methods unless specifically asked.
 
 CONVERSATION HANDLING:
 - For casual greetings like "hi", "hello", "hey" - respond naturally and ask how you can help with skincare or beauty products.
@@ -749,11 +752,11 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
                         injection = {"role": "system", "content": ("For the user's request, you have these products available:\n" f"{product_lines}\n" "Recommend these products in a warm, conversational way. Mention the product names naturally in your response. Do NOT use numbers or bullets in your reply.")}
                     history.insert(1, injection)
                 else:
-                    answer = "Sorry, I couldn't find any products for that. Could you try a different term or be more specific? If I can't answer your question, you can reach out to us via WhatsApp after a few minutes of waiting."
+                    answer = "Sorry, I couldn't find any products for that. Could you try a different term or be more specific?"
                     return jsonify({**meta, "answer": answer, "results": [], "suggestions": get_dynamic_suggestions(user_q)})
         except Exception as e:
             logger.error("Product search error: %s", e)
-            answer = "Sorry, something went wrong. Please try again later. If I can't answer your question, you can reach out to us via WhatsApp after a few minutes of waiting."
+            answer = "Sorry, something went wrong. Please try again later."
             return jsonify({**meta, "answer": answer, "results": [], "suggestions": get_dynamic_suggestions(user_q)})
 
         # 11) "link?" follow-up
