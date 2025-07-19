@@ -89,42 +89,7 @@ export default function Chatbot() {
   const [cartItemsAdded, setCartItemsAdded] = useState([]);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
   
-  // Cart monitoring for dynamic widget
-  useEffect(() => {
-    const checkCart = () => {
-      fetch('/cart.js')
-        .then(res => res.json())
-        .then(cart => {
-          const currentCartItems = cart.items || [];
-          const currentItemCount = currentCartItems.length;
-          
-          // Show dynamic widget if items exist
-          if (currentItemCount > 0) {
-            setShowDynamicWidget(true);
-            
-            // Check if new items were added
-            if (currentItemCount > lastCartItemCount) {
-              setShouldScrollToBottom(true);
-            }
-          } else {
-            setShowDynamicWidget(false);
-          }
-          
-          setLastCartItemCount(currentItemCount);
-        })
-        .catch(error => {
-          console.error('Error fetching cart:', error);
-        });
-    };
 
-    // Check cart immediately
-    checkCart();
-
-    // Set up interval to check cart every 30 seconds
-    const interval = setInterval(checkCart, 30000);
-
-    return () => clearInterval(interval);
-  }, [lastCartItemCount]);
 
   const [isExciting, setIsExciting] = useState(false);
   const [inactivityTimeout, setInactivityTimeout] = useState(null);
@@ -133,6 +98,7 @@ export default function Chatbot() {
   const [showDynamicWidget, setShowDynamicWidget] = useState(false);
   const [dynamicWidgetData, setDynamicWidgetData] = useState(null);
   const [lastCartItemCount, setLastCartItemCount] = useState(0);
+  
   // Keep isDark in sync with <body> class
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -335,6 +301,43 @@ export default function Chatbot() {
 
     return () => clearInterval(interval);
   }, [lastCartState, userHasInteracted, lastCartUpdateTime]);
+
+  // Cart monitoring for dynamic widget
+  useEffect(() => {
+    const checkCart = () => {
+      fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          const currentCartItems = cart.items || [];
+          const currentItemCount = currentCartItems.length;
+          
+          // Show dynamic widget if items exist
+          if (currentItemCount > 0) {
+            setShowDynamicWidget(true);
+            
+            // Check if new items were added
+            if (currentItemCount > lastCartItemCount) {
+              setShouldScrollToBottom(true);
+            }
+          } else {
+            setShowDynamicWidget(false);
+          }
+          
+          setLastCartItemCount(currentItemCount);
+        })
+        .catch(error => {
+          console.error('Error fetching cart:', error);
+        });
+    };
+
+    // Check cart immediately
+    checkCart();
+
+    // Set up interval to check cart every 30 seconds
+    const interval = setInterval(checkCart, 30000);
+
+    return () => clearInterval(interval);
+  }, [lastCartItemCount]);
 
   // Reset user interaction state after 5 minutes of inactivity
   useEffect(() => {
