@@ -390,7 +390,7 @@
   min-height: 0;
   padding: 16px;
   padding-bottom: 8px; /* Further reduce gap above input bar */
-  background: rgba(33, 33, 33, 0.5) !important;
+  background: rgb(162 162 162 / 10%) !important;
   display: flex;
   flex-direction: column;
   gap: 8px; /* Reduce gap between messages */
