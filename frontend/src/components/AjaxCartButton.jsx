@@ -4,45 +4,15 @@ import './AjaxCartButton.css';
 const AjaxCartButton = ({ 
   buttonText = "Here is my cart", 
   buttonClass = "ajax-cart-btn",
-  showCartId = true,
-  showTotal = true,
-  position = "fixed" // fixed, inline, or absolute
+  showCartId = false,
+  showTotal = false,
+  position = "inline" // inline, fixed, or absolute
 }) => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cartUrl, setCartUrl] = useState('');
   const [cartId, setCartId] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
-
-  // Cookie management functions
-  const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  };
-
-  const setCookie = (name, value, days = 365) => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-  };
-
-  const deleteCookie = (name) => {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
-  };
-
-  // Check if cookies are enabled
-  const areCookiesEnabled = () => {
-    try {
-      setCookie('test_cookie', 'test');
-      const enabled = getCookie('test_cookie') === 'test';
-      deleteCookie('test_cookie');
-      return enabled;
-    } catch (e) {
-      return false;
-    }
-  };
 
   // Monitor cart changes
   useEffect(() => {
@@ -53,23 +23,12 @@ const AjaxCartButton = ({
           const currentCartItems = cart.items || [];
           setCartItems(currentCartItems);
           
-          // Check if cookies are enabled
-          if (!areCookiesEnabled()) {
-            console.warn('Cookies are disabled. Cart tracking will not work properly.');
-            return;
-          }
-          
-          // Get existing cart ID from cookie
-          const existingCartId = getCookie('mamatega_cart_id');
-          
           // Create or update cart page if items exist
           if (currentCartItems.length > 0) {
-            createOrUpdateCartPage(currentCartItems, existingCartId);
+            createOrUpdateCartPage(currentCartItems);
           } else {
             setCartUrl('');
             setCartId('');
-            // Clear cart ID cookie when cart is empty
-            deleteCookie('mamatega_cart_id');
           }
         })
         .catch(error => {
@@ -86,7 +45,7 @@ const AjaxCartButton = ({
     return () => clearInterval(interval);
   }, []);
 
-  const createOrUpdateCartPage = async (items, existingCartId = null) => {
+  const createOrUpdateCartPage = async (items) => {
     if (items.length === 0) return;
     
     setIsLoading(true);
@@ -97,9 +56,8 @@ const AjaxCartButton = ({
         : 'https://skincare-ai-backend.onrender.com/api/cart/create';
       
       // Use existing cart ID if available, otherwise create new one
-      const cartIdToUse = existingCartId || cartId;
-      const endpoint = cartIdToUse ? `/api/cart/${cartIdToUse}/update` : '/api/cart/create';
-      const method = cartIdToUse ? 'PUT' : 'POST';
+      const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
+      const method = cartId ? 'PUT' : 'POST';
       
       // Enhance cart items with full product details
       const enhancedItems = await Promise.all(items.map(async (item) => {
@@ -155,9 +113,7 @@ const AjaxCartButton = ({
           user_info: {
             user_agent: navigator.userAgent,
             timestamp: new Date().toISOString(),
-            source: 'ajax_cart_button',
-            cart_id: cartIdToUse,
-            cookies_enabled: areCookiesEnabled()
+            source: 'ajax_cart_button'
           }
         })
       });
@@ -165,16 +121,12 @@ const AjaxCartButton = ({
       if (response.ok) {
         const cartData = await response.json();
         
-        // If creating new cart, get the cart ID and store in cookie
-        if (!cartIdToUse && cartData.cart_id) {
-          const newCartId = cartData.cart_id;
-          setCartId(newCartId);
-          setCookie('mamatega_cart_id', newCartId);
-        } else if (cartIdToUse) {
-          setCartId(cartIdToUse);
+        // If creating new cart, get the cart ID
+        if (!cartId && cartData.cart_id) {
+          setCartId(cartData.cart_id);
         }
         
-        const finalCartId = cartIdToUse || cartData.cart_id;
+        const finalCartId = cartId || cartData.cart_id;
         // Use URL-based cart ID for public sharing
         const fullCartUrl = `${window.location.origin}/cart/${finalCartId}`;
         setCartUrl(fullCartUrl);
@@ -212,8 +164,8 @@ const AjaxCartButton = ({
     return cartItems.reduce((total, item) => total + (item.final_price || 0), 0) / 100;
   };
 
-  // Don't render if no items in cart or cookies disabled
-  if (cartItems.length === 0 || !areCookiesEnabled()) {
+  // Don't render if no items in cart
+  if (cartItems.length === 0) {
     return null;
   }
 
@@ -221,52 +173,26 @@ const AjaxCartButton = ({
 
   return (
     <div className={containerClass}>
-      <div className="ajax-cart-content">
-        <button 
-          className={buttonClass}
-          onClick={handleClick}
-          disabled={isLoading || !cartUrl}
-        >
-          {isLoading ? (
-            <span className="loading-spinner">⏳</span>
-          ) : (
-            <>
-              <span className="cart-icon">🛒</span>
-              <span className="cart-text">
-                {buttonText} ({getTotalItems()} items)
-              </span>
-            </>
-          )}
-        </button>
-        
-        {cartUrl && (
-          <button 
-            className="copy-link-btn"
-            onClick={copyCartLink}
-            title="Copy cart link"
-          >
-            📋
-          </button>
+      <button 
+        className={buttonClass}
+        onClick={handleClick}
+        disabled={isLoading || !cartUrl}
+      >
+        {isLoading ? (
+          <span className="loading-spinner">⏳</span>
+        ) : (
+          <>
+            <span className="cart-icon">🛒</span>
+            <span className="cart-text">
+              {buttonText} ({getTotalItems()} items)
+            </span>
+          </>
         )}
-      </div>
+      </button>
       
       {showTooltip && (
         <div className="tooltip">
           Cart link copied! 📋
-        </div>
-      )}
-      
-      {showTotal && (
-        <div className="cart-total">
-          <span className="total-label">Total:</span>
-          <span className="total-value">${getTotalPrice().toFixed(2)}</span>
-        </div>
-      )}
-      
-      {showCartId && cartId && (
-        <div className="cart-id">
-          <span className="id-label">ID:</span>
-          <span className="id-value">{cartId}</span>
         </div>
       )}
     </div>

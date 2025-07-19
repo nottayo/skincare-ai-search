@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './Chatbot.css';
 import ReactMarkdown from 'react-markdown';
-import DynamicWidget from './DynamicWidget';
 
 const ALL_SUGGESTIONS = [
   "Any good serums for my skin?",
@@ -94,10 +93,7 @@ export default function Chatbot() {
   const [isExciting, setIsExciting] = useState(false);
   const [inactivityTimeout, setInactivityTimeout] = useState(null);
   
-  // Dynamic widget states
-  const [showDynamicWidget, setShowDynamicWidget] = useState(false);
-  const [dynamicWidgetData, setDynamicWidgetData] = useState(null);
-  const [lastCartItemCount, setLastCartItemCount] = useState(0);
+
   
   // Keep isDark in sync with <body> class
   useEffect(() => {
@@ -156,12 +152,7 @@ export default function Chatbot() {
   }, [messages, shouldScrollToBottom]);
 
   // Separate effect for dynamic widget scrolling
-  useEffect(() => {
-    if (showDynamicWidget && shouldScrollToBottom) {
-      endRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setShouldScrollToBottom(false);
-    }
-  }, [showDynamicWidget, shouldScrollToBottom]);
+
 
   // Track user interaction when chat is opened
   useEffect(() => {
@@ -302,42 +293,7 @@ export default function Chatbot() {
     return () => clearInterval(interval);
   }, [lastCartState, userHasInteracted, lastCartUpdateTime]);
 
-  // Cart monitoring for dynamic widget
-  useEffect(() => {
-    const checkCart = () => {
-      fetch('/cart.js')
-        .then(res => res.json())
-        .then(cart => {
-          const currentCartItems = cart.items || [];
-          const currentItemCount = currentCartItems.length;
-          
-          // Show dynamic widget if items exist
-          if (currentItemCount > 0) {
-            setShowDynamicWidget(true);
-            
-            // Check if new items were added
-            if (currentItemCount > lastCartItemCount) {
-              setShouldScrollToBottom(true);
-            }
-          } else {
-            setShowDynamicWidget(false);
-          }
-          
-          setLastCartItemCount(currentItemCount);
-        })
-        .catch(error => {
-          console.error('Error fetching cart:', error);
-        });
-    };
 
-    // Check cart immediately
-    checkCart();
-
-    // Set up interval to check cart every 30 seconds
-    const interval = setInterval(checkCart, 30000);
-
-    return () => clearInterval(interval);
-  }, [lastCartItemCount]);
 
   // Reset user interaction state after 5 minutes of inactivity
   useEffect(() => {
@@ -446,13 +402,7 @@ export default function Chatbot() {
   };
 
   // Smart function to update bubble text based on cart activity
-  const handleDynamicWidgetUpdate = (cartData) => {
-    setDynamicWidgetData(cartData);
-    // Only scroll if this is a new cart or new items added
-    if (!dynamicWidgetData || cartData.totalItems > (dynamicWidgetData?.totalItems || 0)) {
-      setShouldScrollToBottom(true);
-    }
-  };
+
 
   const updateBubbleText = (cartItems, newItems = []) => {
     if (cartItems.length === 0) {
@@ -1174,15 +1124,7 @@ export default function Chatbot() {
               );
             })}
             
-            {/* Dynamic Widget - renders as a bubble when cart has items */}
-            {showDynamicWidget && (
-              <div className="chat-message bot">
-                <div className="message-bubble">
-                  <div className={`bubble-label bot-label${isDark ? ' dark' : ''}`}>MamaTega</div>
-                  <DynamicWidget onCartUpdate={handleDynamicWidgetUpdate} />
-                </div>
-              </div>
-            )}
+
             
             <div ref={endRef} />
           </div>

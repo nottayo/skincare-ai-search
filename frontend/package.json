@@ -24,7 +24,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:widget": "vite build --config vite.widget.config.js",
-    "build:dynamic-checkout": "vite build --config vite.dynamic-checkout.config.js"
+    "build:dynamic-checkout": "vite build --config vite.dynamic-checkout.config.js",
+    "build:static-site": "vite build --config vite.static-site.config.js"
   },
   "eslintConfig": {
     "extends": [

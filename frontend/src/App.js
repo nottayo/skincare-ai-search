@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Chatbot from './components/Chatbot';
-import DynamicCheckout from './components/DynamicCheckout';
 import AjaxCartButton from './components/AjaxCartButton';
 import './App.css';
 
@@ -73,13 +72,19 @@ function App() {
       </div>
 
       <Chatbot />
-      <DynamicCheckout />
-      <AjaxCartButton 
-        buttonText="Here is my cart"
-        position="fixed"
-        showCartId={true}
-        showTotal={true}
-      />
+      <div style={{ 
+        position: 'fixed', 
+        bottom: '20px', 
+        right: '20px', 
+        zIndex: 1000 
+      }}>
+        <AjaxCartButton 
+          buttonText="Here is my cart"
+          position="inline"
+          showCartId={false}
+          showTotal={false}
+        />
+      </div>
     </div>
   );
 }
