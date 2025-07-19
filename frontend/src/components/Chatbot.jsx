@@ -188,20 +188,21 @@ export default function Chatbot() {
           if (cart.items && cart.items.length > 0 && isNewCart) {
             const itemNames = cart.items.map(item => item.product_title);
             const itemUrls = cart.items.map(item => item.url);
-            const numberedItems = itemNames.map((item, index) => `${index + 1}. [${item}](${itemUrls[index]})`).join('\n');
+            const itemQuantities = cart.items.map(item => item.quantity);
+            const numberedItems = itemNames.map((item, index) => `${index + 1}. [${item}](${itemUrls[index]}) (Qty: ${itemQuantities[index]})`).join('\n');
             
             // Create WhatsApp and Instagram messages with cart items
-            const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+            const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
             const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
             const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
             
             // Array of varied cart messages with links and both WhatsApp & Instagram options
             const cartMessages = [
-              `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nNeed personalized assistance? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})`,
-              `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect on WhatsApp](${whatsappLink}) or [DM on Instagram](${instagramLink})`,
-              `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support: [WhatsApp](${whatsappLink}) | [Instagram DM](${instagramLink})`,
-              `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message on WhatsApp](${whatsappLink}) or [Instagram](${instagramLink})`,
-              `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance: [WhatsApp](${whatsappLink}) | [Instagram](${instagramLink})`
+              `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nNeed personalized assistance? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
+              `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect on WhatsApp](${whatsappLink}) or [DM on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
+              `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support: [WhatsApp](${whatsappLink}) | [Instagram DM](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
+              `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message on WhatsApp](${whatsappLink}) or [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
+              `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance: [WhatsApp](${whatsappLink}) | [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`
             ];
             
             // Pick a random message
@@ -428,7 +429,7 @@ export default function Chatbot() {
         const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
         const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
         
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
         
         setMessages(m => [
           ...m,
@@ -445,7 +446,7 @@ export default function Chatbot() {
       })
       .catch(() => {
         // Fallback if cart fetch fails
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
         
         setMessages(m => [
           ...m,
@@ -605,7 +606,8 @@ export default function Chatbot() {
         // Fallback - get cart items for WhatsApp message
         const cartItems = lastBotMessage.cartItems || [];
         const itemNames = cartItems.map(item => item.product_title);
-        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+        const itemQuantities = cartItems.map(item => item.quantity);
+        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
         connectToWhatsApp(whatsappMessage);
         answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
       }
@@ -618,7 +620,8 @@ export default function Chatbot() {
         // Fallback - get cart items for Instagram message
         const cartItems = lastBotMessage.cartItems || [];
         const itemNames = cartItems.map(item => item.product_title);
-        const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+        const itemQuantities = cartItems.map(item => item.quantity);
+        const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
         connectToInstagram(instagramMessage);
         answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
       }
@@ -637,7 +640,8 @@ export default function Chatbot() {
       // General contact request with cart - offer both options
       const cartItems = lastBotMessage.cartItems || [];
       const itemNames = cartItems.map(item => item.product_title);
-      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+      const itemQuantities = cartItems.map(item => item.quantity);
+      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
       connectToWhatsApp(whatsappMessage);
       
       answer = "I've opened WhatsApp for you with your cart items! You can also reach us on Instagram DM if you prefer. 📱📸";
