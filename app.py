@@ -64,6 +64,8 @@ ALLOWED_MODELS = [
 # ──────────────────────────────────────────────────────────────────────────────
 chat_histories = {}   # session_id → chat history
 last_results   = {}   # session_id → last product list
+user_carts = {}       # cart_id → cart data
+cart_counter = 1      # For generating unique cart IDs
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Preload known brands
@@ -450,6 +452,32 @@ GREETINGS = [
 
 def strip_brand(title):
     return re.sub(r'^MamaTega\s+', '', title, flags=re.IGNORECASE)
+
+def generate_cart_id():
+    """Generate a unique cart ID"""
+    global cart_counter
+    cart_id = f"CART{cart_counter:06d}"
+    cart_counter += 1
+    return cart_id
+
+def create_cart_page(cart_items, user_info=None):
+    """Create a cart page with items and return cart ID"""
+    cart_id = generate_cart_id()
+    
+    # Calculate total
+    total_price = sum(item.get('final_price', 0) for item in cart_items)
+    
+    cart_data = {
+        'id': cart_id,
+        'items': cart_items,
+        'total_price': total_price,
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'user_info': user_info or {},
+        'item_count': len(cart_items)
+    }
+    
+    user_carts[cart_id] = cart_data
+    return cart_id
 
 # 2. Add post-processing to remove numbers/bullets and repeated greetings:
 def clean_ai_reply(reply, is_first_message=False):
@@ -907,6 +935,389 @@ def products_by_handles():
     data = resp.json().get("data", {})
     products = [v for v in data.values() if v]
     return jsonify(products)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Cart Management Endpoints
+# ──────────────────────────────────────────────────────────────────────────────
+
+@app.route('/api/cart/create', methods=['POST'])
+def create_cart():
+    """Create a new cart page with items"""
+    try:
+        data = request.get_json()
+        cart_items = data.get('items', [])
+        user_info = data.get('user_info', {})
+        
+        if not cart_items:
+            return jsonify({'error': 'No items provided'}), 400
+        
+        cart_id = create_cart_page(cart_items, user_info)
+        
+        return jsonify({
+            'cart_id': cart_id,
+            'cart_url': f'/cart/{cart_id}',
+            'message': 'Cart created successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating cart: {e}")
+        return jsonify({'error': 'Failed to create cart'}), 500
+
+@app.route('/api/cart/<cart_id>', methods=['GET'])
+def get_cart(cart_id):
+    """Get cart data by ID"""
+    try:
+        if cart_id not in user_carts:
+            return jsonify({'error': 'Cart not found'}), 404
+        
+        cart_data = user_carts[cart_id]
+        return jsonify(cart_data)
+        
+    except Exception as e:
+        logger.error(f"Error getting cart {cart_id}: {e}")
+        return jsonify({'error': 'Failed to get cart'}), 500
+
+@app.route('/api/cart/<cart_id>/update', methods=['PUT'])
+def update_cart(cart_id):
+    """Update cart items"""
+    try:
+        if cart_id not in user_carts:
+            return jsonify({'error': 'Cart not found'}), 404
+        
+        data = request.get_json()
+        new_items = data.get('items', [])
+        
+        # Update cart data
+        cart_data = user_carts[cart_id]
+        cart_data['items'] = new_items
+        cart_data['total_price'] = sum(item.get('final_price', 0) for item in new_items)
+        cart_data['item_count'] = len(new_items)
+        cart_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        user_carts[cart_id] = cart_data
+        
+        return jsonify({
+            'cart_id': cart_id,
+            'message': 'Cart updated successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating cart {cart_id}: {e}")
+        return jsonify({'error': 'Failed to update cart'}), 500
+
+@app.route('/cart/<cart_id>')
+def serve_cart_page(cart_id):
+    """Serve the cart page HTML"""
+    if cart_id not in user_carts:
+        return "Cart not found", 404
+    
+    cart_data = user_carts[cart_id]
+    
+    # Generate beautiful HTML for the cart page
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Cart - MamaTega Cosmetics</title>
+        <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
+            
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }}
+            
+            .cart-container {{
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }}
+            
+            .cart-header {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            
+            .cart-header h1 {{
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                font-weight: 300;
+            }}
+            
+            .cart-id {{
+                font-size: 1.2em;
+                opacity: 0.9;
+                font-family: monospace;
+            }}
+            
+            .cart-items {{
+                padding: 30px;
+            }}
+            
+            .item {{
+                display: flex;
+                align-items: center;
+                padding: 20px;
+                border-bottom: 1px solid #eee;
+                transition: all 0.3s ease;
+            }}
+            
+            .item:hover {{
+                background: #f8f9fa;
+                transform: translateX(5px);
+            }}
+            
+            .item-image {{
+                width: 80px;
+                height: 80px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 2em;
+                margin-right: 20px;
+                flex-shrink: 0;
+            }}
+            
+            .item-details {{
+                flex: 1;
+            }}
+            
+            .item-title {{
+                font-size: 1.2em;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 5px;
+            }}
+            
+            .item-variant {{
+                color: #666;
+                font-size: 0.9em;
+                margin-bottom: 5px;
+            }}
+            
+            .item-price {{
+                font-size: 1.1em;
+                font-weight: 600;
+                color: #667eea;
+            }}
+            
+            .item-quantity {{
+                background: #667eea;
+                color: white;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.9em;
+                font-weight: 600;
+                margin-left: 20px;
+            }}
+            
+            .cart-total {{
+                background: #f8f9fa;
+                padding: 30px;
+                text-align: center;
+                border-top: 2px solid #eee;
+            }}
+            
+            .total-amount {{
+                font-size: 2.5em;
+                font-weight: 700;
+                color: #667eea;
+                margin-bottom: 10px;
+            }}
+            
+            .total-label {{
+                color: #666;
+                font-size: 1.1em;
+                margin-bottom: 20px;
+            }}
+            
+            .action-buttons {{
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }}
+            
+            .btn {{
+                padding: 15px 30px;
+                border: none;
+                border-radius: 25px;
+                font-size: 1.1em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+            }}
+            
+            .btn-whatsapp {{
+                background: #25D366;
+                color: white;
+            }}
+            
+            .btn-whatsapp:hover {{
+                background: #128C7E;
+                transform: translateY(-2px);
+            }}
+            
+            .btn-instagram {{
+                background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+                color: white;
+            }}
+            
+            .btn-instagram:hover {{
+                transform: translateY(-2px);
+            }}
+            
+            .btn-copy {{
+                background: #667eea;
+                color: white;
+            }}
+            
+            .btn-copy:hover {{
+                background: #5a6fd8;
+                transform: translateY(-2px);
+            }}
+            
+            .store-info {{
+                background: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                border-top: 1px solid #eee;
+            }}
+            
+            .store-info h3 {{
+                color: #333;
+                margin-bottom: 10px;
+            }}
+            
+            .store-info p {{
+                color: #666;
+                line-height: 1.6;
+            }}
+            
+            @media (max-width: 600px) {{
+                .item {{
+                    flex-direction: column;
+                    text-align: center;
+                }}
+                
+                .item-image {{
+                    margin-right: 0;
+                    margin-bottom: 15px;
+                }}
+                
+                .item-quantity {{
+                    margin-left: 0;
+                    margin-top: 10px;
+                }}
+                
+                .action-buttons {{
+                    flex-direction: column;
+                }}
+                
+                .btn {{
+                    width: 100%;
+                    justify-content: center;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="cart-container">
+            <div class="cart-header">
+                <h1>🛒 My Cart</h1>
+                <div class="cart-id">{cart_id}</div>
+            </div>
+            
+            <div class="cart-items">
+    """
+    
+    # Add items to HTML
+    for item in cart_data['items']:
+        item_name = item.get('product_title', 'Product')
+        item_price = item.get('final_price', 0) / 100  # Convert from cents
+        item_quantity = item.get('quantity', 1)
+        
+        # Get variant info
+        variant_options = item.get('variant_options', [])
+        variant_text = ""
+        if variant_options:
+            valid_variants = [opt for opt in variant_options if opt.get('name') and opt.get('value')]
+            if valid_variants:
+                variant_text = " - " + ", ".join([f"{opt['name']}: {opt['value']}" for opt in valid_variants])
+        
+        html += f"""
+                <div class="item">
+                    <div class="item-image">🛍️</div>
+                    <div class="item-details">
+                        <div class="item-title">{item_name}</div>
+                        <div class="item-variant">{variant_text}</div>
+                        <div class="item-price">${item_price:.2f}</div>
+                    </div>
+                    <div class="item-quantity">Qty: {item_quantity}</div>
+                </div>
+        """
+    
+    total_price = cart_data['total_price'] / 100  # Convert from cents
+    
+    html += f"""
+            </div>
+            
+            <div class="cart-total">
+                <div class="total-label">Total Amount</div>
+                <div class="total-amount">${total_price:.2f}</div>
+                
+                <div class="action-buttons">
+                    <a href="https://wa.me/2348189880899?text=Hi MamaTega! I have items in my cart: {cart_id}. Can you help me complete my order?" class="btn btn-whatsapp">
+                        📱 WhatsApp
+                    </a>
+                    <a href="https://www.instagram.com/mamategacosmeticsandspa/" class="btn btn-instagram">
+                        📸 Instagram
+                    </a>
+                    <button onclick="copyCartLink()" class="btn btn-copy">
+                        📋 Copy Link
+                    </button>
+                </div>
+            </div>
+            
+            <div class="store-info">
+                <h3>📍 MamaTega Cosmetics</h3>
+                <p>Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos</p>
+                <p>🕒 Mon–Sat: 8AM–8PM | Sun: 1PM–7PM</p>
+            </div>
+        </div>
+        
+        <script>
+            function copyCartLink() {{
+                navigator.clipboard.writeText(window.location.href).then(function() {{
+                    alert('Cart link copied to clipboard!');
+                }});
+            }}
+        </script>
+    </body>
+    </html>
+    """
+    
+    return html
 
 if __name__ == "__main__":
     app.run(

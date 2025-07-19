@@ -249,7 +249,8 @@ export default function Chatbot() {
               // Only update bubble if user hasn't interacted since last cart update
               if (!userHasInteracted || !lastCartUpdateTime || (Date.now() - lastCartUpdateTime) > 30000) {
                 updateBubbleText(currentCartItems, newItems);
-                updateExistingCartMessage(currentCartItems, newItems);
+                // Call async function without await to avoid blocking
+                updateExistingCartMessage(currentCartItems, newItems).catch(console.error);
               }
             } else if (removedItems.length > 0) {
               // Items were removed
@@ -259,7 +260,8 @@ export default function Chatbot() {
               
               // Update bubble text for cart changes
               updateBubbleText(currentCartItems);
-              updateExistingCartMessage(currentCartItems, []);
+              // Call async function without await to avoid blocking
+              updateExistingCartMessage(currentCartItems, []).catch(console.error);
             }
             
             // Store cart IDs in localStorage for persistence
@@ -419,79 +421,115 @@ export default function Chatbot() {
     }
   };
 
-  // Function to update existing cart message instead of creating new ones
-  const updateExistingCartMessage = (cartItems, newItems = []) => {
-    setMessages(prevMessages => {
-      // Find the last cart message
-      const lastCartMessageIndex = prevMessages.findLastIndex(msg => 
-        msg.isCartMessage || msg.text?.includes('cart') || msg.text?.includes('items')
-      );
+  // Function to create or update cart page and generate cart message
+  const updateExistingCartMessage = async (cartItems, newItems = []) => {
+    try {
+      // Create or update cart page
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const API_URL = isLocalhost
+        ? 'http://localhost:10000/api/cart/create'
+        : 'https://skincare-ai-backend.onrender.com/api/cart/create';
       
-      if (lastCartMessageIndex !== -1) {
-        // Update the existing cart message
-        const updatedMessages = [...prevMessages];
-        const existingMessage = updatedMessages[lastCartMessageIndex];
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          user_info: {
+            user_agent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create cart page');
+      }
+      
+      const cartData = await response.json();
+      const cartId = cartData.cart_id;
+      const cartUrl = `${window.location.origin}${cartData.cart_url}`;
+      
+      setMessages(prevMessages => {
+        // Find the last cart message
+        const lastCartMessageIndex = prevMessages.findLastIndex(msg => 
+          msg.isCartMessage || msg.text?.includes('cart') || msg.text?.includes('items')
+        );
         
-        // Create updated cart message content
-        const itemNames = cartItems.map(item => item.product_title);
-        const itemUrls = cartItems.map(item => item.url);
-        const itemQuantities = cartItems.map(item => item.quantity);
-        const itemVariants = cartItems.map(item => {
-          const variantOptions = item.variant_options || [];
-          const validVariants = variantOptions.filter(option => 
-            option && option.name && option.value && 
-            option.name !== 'undefined' && option.value !== 'undefined' &&
-            option.name.trim() !== '' && option.value.trim() !== ''
-          );
+        if (lastCartMessageIndex !== -1) {
+          // Update the existing cart message
+          const updatedMessages = [...prevMessages];
+          const existingMessage = updatedMessages[lastCartMessageIndex];
           
-          const variantText = validVariants.length > 0 
-            ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
-            : '';
-          return variantText;
-        });
+          // Create updated cart message with cart page link
+          const cartMessages = [
+            `Great! I've created a beautiful cart page for your items. You can view your cart here: **[Here is my cart](${cartUrl})**\n\nThis page shows all your items with prices and quantities. You can easily share this link with us on WhatsApp or Instagram to complete your order! 🛒✨`,
+            `Perfect! I've organized your cart items into a beautiful page. Check it out: **[Here is my cart](${cartUrl})**\n\nThis makes it super easy to share your order with us. Just copy the link and send it to us on WhatsApp or Instagram! 📱💫`,
+            `Awesome! I've created a cart page for your items: **[Here is my cart](${cartUrl})**\n\nThis page displays all your selections with details. Simply share this link with us to complete your purchase! 🎯✨`,
+            `Excellent! I've prepared your cart items in a beautiful page: **[Here is my cart](${cartUrl})**\n\nThis shows everything you've selected. Just share this link with us on WhatsApp or Instagram to place your order! 🛍️💖`,
+            `Fantastic! I've organized your cart into a lovely page: **[Here is my cart](${cartUrl})**\n\nThis displays all your items clearly. Share this link with us to complete your order easily! 🌟📱`
+          ];
+          
+          const randomMessage = cartMessages[Math.floor(Math.random() * cartMessages.length)];
+          
+          // Update the existing message
+          updatedMessages[lastCartMessageIndex] = {
+            ...existingMessage,
+            text: randomMessage,
+            time: timeStamp(),
+            cartItems: cartItems,
+            cartId: cartId,
+            cartUrl: cartUrl,
+            isExistingUpdate: true // Mark as update to prevent auto-scroll
+          };
+          
+          return updatedMessages;
+        } else {
+          // If no existing cart message found, create a new one (only if user hasn't interacted)
+          if (!userHasInteracted) {
+            const cartMessages = [
+              `Great! I've created a beautiful cart page for your items. You can view your cart here: **[Here is my cart](${cartUrl})**\n\nThis page shows all your items with prices and quantities. You can easily share this link with us on WhatsApp or Instagram to complete your order! 🛒✨`,
+              `Perfect! I've organized your cart items into a beautiful page. Check it out: **[Here is my cart](${cartUrl})**\n\nThis makes it super easy to share your order with us. Just copy the link and send it to us on WhatsApp or Instagram! 📱💫`,
+              `Awesome! I've created a cart page for your items: **[Here is my cart](${cartUrl})**\n\nThis page displays all your selections with details. Simply share this link with us to complete your purchase! 🎯✨`,
+              `Excellent! I've prepared your cart items in a beautiful page: **[Here is my cart](${cartUrl})**\n\nThis shows everything you've selected. Just share this link with us on WhatsApp or Instagram to place your order! 🛍️💖`,
+              `Fantastic! I've organized your cart into a lovely page: **[Here is my cart](${cartUrl})**\n\nThis displays all your items clearly. Share this link with us to complete your order easily! 🌟📱`
+            ];
+            
+            const randomMessage = cartMessages[Math.floor(Math.random() * cartMessages.length)];
+            
+            return [
+              ...prevMessages,
+              {
+                type: 'bot',
+                text: randomMessage,
+                time: timeStamp(),
+                isCartMessage: true,
+                cartItems: cartItems,
+                cartId: cartId,
+                cartUrl: cartUrl
+              }
+            ];
+          }
+          
+          return prevMessages;
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error creating cart page:', error);
+      // Fallback to old message format if cart page creation fails
+      setMessages(prevMessages => {
+        const lastCartMessageIndex = prevMessages.findLastIndex(msg => 
+          msg.isCartMessage || msg.text?.includes('cart') || msg.text?.includes('items')
+        );
         
-        const numberedItems = itemNames.map((item, index) => {
-          const variantInfo = itemVariants[index];
-          return `${index + 1}. [${item}](${itemUrls[index]}) (Qty: ${itemQuantities[index]}${variantInfo})`;
-        }).join('\n');
-        
-        // Create WhatsApp and Instagram messages with cart items
-        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
-          const variantInfo = itemVariants[index];
-          return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
-        }).join('\n')}\n\nCan you help me with these products?`;
-        const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-        const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
-        
-        // Array of varied cart messages with links and both WhatsApp & Instagram options
-        const cartMessages = [
-          `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nNeed personalized assistance? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-          `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect on WhatsApp](${whatsappLink}) or [DM on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-          `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support: [WhatsApp](${whatsappLink}) | [Instagram DM](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-          `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message on WhatsApp](${whatsappLink}) or [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-          `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance: [WhatsApp](${whatsappLink}) | [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`
-        ];
-        
-        // Pick a random message
-        const randomMessage = cartMessages[Math.floor(Math.random() * cartMessages.length)];
-        
-        // Update the existing message
-        updatedMessages[lastCartMessageIndex] = {
-          ...existingMessage,
-          text: randomMessage,
-          time: timeStamp(),
-          cartItems: cartItems,
-          whatsappLink: whatsappLink,
-          instagramLink: instagramLink,
-          isExistingUpdate: true // Mark as update to prevent auto-scroll
-        };
-        
-        return updatedMessages;
-      } else {
-        // If no existing cart message found, create a new one (only if user hasn't interacted)
-        if (!userHasInteracted) {
+        if (lastCartMessageIndex !== -1) {
+          const updatedMessages = [...prevMessages];
+          const existingMessage = updatedMessages[lastCartMessageIndex];
+          
           const itemNames = cartItems.map(item => item.product_title);
-          const itemUrls = cartItems.map(item => item.url);
           const itemQuantities = cartItems.map(item => item.quantity);
           const itemVariants = cartItems.map(item => {
             const variantOptions = item.variant_options || [];
@@ -509,7 +547,7 @@ export default function Chatbot() {
           
           const numberedItems = itemNames.map((item, index) => {
             const variantInfo = itemVariants[index];
-            return `${index + 1}. [${item}](${itemUrls[index]}) (Qty: ${itemQuantities[index]}${variantInfo})`;
+            return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
           }).join('\n');
           
           const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
@@ -519,33 +557,22 @@ export default function Chatbot() {
           const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
           const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
           
-          const cartMessages = [
-            `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nNeed personalized assistance? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-            `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect on WhatsApp](${whatsappLink}) or [DM on Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-            `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support: [WhatsApp](${whatsappLink}) | [Instagram DM](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-            `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message on WhatsApp](${whatsappLink}) or [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`,
-            `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance: [WhatsApp](${whatsappLink}) | [Instagram](${instagramLink})\n\n*Note: Prices and product availability may change frequently as they are dynamic.*`
-          ];
+          const fallbackMessage = `I can see you've selected:\n\n${numberedItems}\n\nNeed help? [Chat on WhatsApp](${whatsappLink}) or [Message on Instagram](${instagramLink})`;
           
-          const randomMessage = cartMessages[Math.floor(Math.random() * cartMessages.length)];
+          updatedMessages[lastCartMessageIndex] = {
+            ...existingMessage,
+            text: fallbackMessage,
+            time: timeStamp(),
+            cartItems: cartItems,
+            isExistingUpdate: true
+          };
           
-          return [
-            ...prevMessages,
-            {
-              type: 'bot',
-              text: randomMessage,
-              time: timeStamp(),
-              isCartMessage: true,
-              cartItems: cartItems,
-              whatsappLink: whatsappLink,
-              instagramLink: instagramLink
-            }
-          ];
+          return updatedMessages;
         }
         
         return prevMessages;
-      }
-    });
+      });
+    }
   };
 
   // Function to send inactivity prompts
