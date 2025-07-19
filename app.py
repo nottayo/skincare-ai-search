@@ -143,6 +143,11 @@ def get_history(session_id):
     return chat_histories[session_id]
 
 def is_product_intent(text: str) -> bool:
+    # Don't trigger for vague requests
+    vague_phrases = ["i need something", "help me", "i need help", "what do you have", "show me"]
+    if any(phrase in text.lower() for phrase in vague_phrases):
+        return False
+    
     return any(k in text.lower() for k in (
         "soap", "cream", "lotion", "buy", "order", "price", "skincare", "niacinamide"
     ))
@@ -445,10 +450,12 @@ IMPORTANT RULES (ALWAYS FOLLOW):
 CONVERSATION HANDLING:
 - For casual greetings like "hi", "hello", "you good?", "how are you" - respond naturally with a warm greeting and ask how you can help with skincare or beauty products.
 - For casual responses like "okay", "thanks", "alright" - acknowledge warmly and ask if they need help with anything specific.
-- Only search for products when the user explicitly asks about products, brands, or skincare concerns.
+- For vague requests like "I need something" or "help me" - take charge by asking clarifying questions about their skin concerns, preferences, or what they're looking for.
+- Only search for products when the user provides specific details about what they want.
 - For general conversation, be friendly and helpful without forcing product recommendations.
 - NEVER say "sorting through product list" or similar phrases unless the user specifically asks for product recommendations.
 - For casual conversation, respond naturally without mentioning products or searching.
+- ALWAYS ask follow-up questions when the user's request is unclear or vague.
 
 You are the MamaTega Assistant for MamaTega Cosmetics.
 Store Details:
