@@ -128,15 +128,15 @@
 .chatbot-widget {
   position: fixed !important;
   bottom: 20px !important;
-  right: 20px !important;
-  left: auto !important;
+  left: 20px !important;
+  right: auto !important;
   top: auto !important;
   width: 360px !important;
   max-height: 60vh !important;
   height: 60vh !important;
   background: #212121 !important;
   color: #f3f3f3 !important;
-  border-radius: 20px 20px 8px 20px !important;
+  border-radius: 20px 20px 20px 8px !important;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 16px 64px rgba(0, 0, 0, 0.2),
@@ -165,8 +165,8 @@
 .chatbot-widget.chatbot-widget-open {
   position: fixed !important;
   bottom: 20px !important;
-  right: 10px !important;
-  left: auto !important;
+  left: 10px !important;
+  right: auto !important;
   top: auto !important;
   transform: none !important;
 }
@@ -943,13 +943,13 @@
 .chatbot-bubble {
   position: fixed !important;
   bottom: 32px !important;
-  right: 32px !important;
-  left: auto !important;
+  left: 32px !important;
+  right: auto !important;
   top: auto !important;
   background: linear-gradient(135deg, #0066ff, #0052cc) !important;
   color: #fff !important;
   padding: 10px 22px;
-  border-radius: 20px 20px 8px 20px;
+  border-radius: 20px 20px 20px 8px;
   font-size: 16px;
   font-weight: 700;
   box-shadow: 
@@ -999,8 +999,8 @@
 .chatbot-bubble {
   position: fixed !important;
   bottom: 32px !important;
-  right: 32px !important;
-  left: auto !important;
+  left: 32px !important;
+  right: auto !important;
   top: auto !important;
   transform: none !important;
   margin: 0 !important;
@@ -1013,8 +1013,8 @@
 div.chatbot-bubble {
   position: fixed !important;
   bottom: 32px !important;
-  right: 32px !important;
-  left: auto !important;
+  left: 32px !important;
+  right: auto !important;
   top: auto !important;
   transform: none !important;
 }
@@ -1076,8 +1076,8 @@ div.chatbot-bubble {
 
 @media (max-width: 500px) {
   .chatbot-bubble {
-    right: 16px !important;
-    left: auto !important;
+    left: 16px !important;
+    right: auto !important;
     bottom: 16px !important;
     transform: none !important;
     font-size: 13px;
@@ -1860,8 +1860,8 @@ div.chatbot-bubble {
     margin-top: 12px !important;
   }
   body .chatbot-bubble {
-    right: 16px !important;
-    left: auto !important;
+    left: 16px !important;
+    right: auto !important;
     bottom: 16px !important;
     top: auto !important;
     transform: none !important;
