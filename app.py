@@ -711,7 +711,7 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
         except Exception as e:
             logger.error("GPT error: %s", e)
             if "429" in str(e) or "rate limit" in str(e).lower():
-                answer = "I'm busy at the moment assisting other customers. I'll be with you shortly!"
+                answer = "I am assisting customers at the moment, please come back in a few minutes."
             else:
                 answer = "Sorry, something went wrong. Please try again later."
 
