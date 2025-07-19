@@ -9,22 +9,22 @@
       }
     },
     {
-      "src": "backend/api/cart.js",
+      "src": "api/cart.js",
       "use": "@vercel/node"
     },
     {
-      "src": "backend/api/ai-search.js",
+      "src": "api/ai-search.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/cart",
-      "dest": "/backend/api/cart.js"
+      "dest": "/api/cart.js"
     },
     {
       "src": "/api/ai-search",
-      "dest": "/backend/api/ai-search.js"
+      "dest": "/api/ai-search.js"
     },
     {
       "src": "/(.*)",
@@ -32,10 +32,10 @@
     }
   ],
   "functions": {
-    "backend/api/cart.js": {
+    "api/cart.js": {
       "maxDuration": 30
     },
-    "backend/api/ai-search.js": {
+    "api/ai-search.js": {
       "maxDuration": 30
     }
   }

@@ -1,18 +1,20 @@
-# Ignore all Python files and dependencies
+# Ignore ALL Python files and backend folder
 *.py
 requirements.txt
-backend/*.py
-backend/requirements.txt
-backend/*.json
-backend/*.csv
-backend/*.md
+backend/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # Ignore node_modules Python files
 node_modules/**/*.py
 
-# Keep only the API functions and frontend
-!backend/api/*.js
+# Keep only the essential files for Vercel
 !frontend/**
+!api/*.js
 !vercel.json
 !package.json
 !package-lock.json 
