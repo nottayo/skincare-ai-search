@@ -130,17 +130,33 @@
                         this.updateButton(cart.items || []);
                     }
                 } catch (error) {
-                    console.log('Cart check failed (normal if not on Shopify):', error.message);
+                    // If we're in an iframe, try to get cart from parent
+                    if (window.parent && window.parent !== window) {
+                        try {
+                            const parentCartResponse = await window.parent.fetch('/cart.js');
+                            if (parentCartResponse.ok) {
+                                const cart = await parentCartResponse.json();
+                                this.updateButton(cart.items || []);
+                            }
+                        } catch (parentError) {
+                            console.log('Parent cart check failed:', parentError.message);
+                        }
+                    } else {
+                        console.log('Cart check failed (normal if not on Shopify):', error.message);
+                    }
                 }
             }
             
             updateButton(items) {
+                // For testing - if no items detected, show a default state
                 if (items.length > 0) {
                     this.cartText.textContent = `Here is my cart (${items.length} items)`;
                     this.container.classList.remove('hidden');
                     this.createCartPage(items);
                 } else {
-                    this.container.classList.add('hidden');
+                    // Show button even with 0 items for testing
+                    this.cartText.textContent = `Here is my cart (0 items)`;
+                    this.container.classList.remove('hidden');
                     this.cartUrl = null;
                 }
             }
