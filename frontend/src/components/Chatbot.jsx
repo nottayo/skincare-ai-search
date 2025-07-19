@@ -222,14 +222,14 @@ export default function Chatbot() {
             const itemVariants = cart.items.map(item => {
               // Get variant options (color, size, ML, etc.)
               const variantOptions = item.variant_options || [];
-              const variantText = variantOptions.length > 0 
-                ? ` - ${variantOptions.map(option => {
-                    // Check if option has valid name and value
-                    if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
-                      return `${option.name}: ${option.value}`;
-                    }
-                    return null;
-                  }).filter(Boolean).join(', ')}`
+              const validVariants = variantOptions.filter(option => 
+                option && option.name && option.value && 
+                option.name !== 'undefined' && option.value !== 'undefined' &&
+                option.name.trim() !== '' && option.value.trim() !== ''
+              );
+              
+              const variantText = validVariants.length > 0 
+                ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
                 : '';
               return variantText;
             });
@@ -682,14 +682,14 @@ export default function Chatbot() {
         const itemQuantities = cartItems.map(item => item.quantity);
         const itemVariants = cartItems.map(item => {
           const variantOptions = item.variant_options || [];
-          const variantText = variantOptions.length > 0 
-            ? ` - ${variantOptions.map(option => {
-                // Check if option has valid name and value
-                if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
-                  return `${option.name}: ${option.value}`;
-                }
-                return null;
-              }).filter(Boolean).join(', ')}`
+          const validVariants = variantOptions.filter(option => 
+            option && option.name && option.value && 
+            option.name !== 'undefined' && option.value !== 'undefined' &&
+            option.name.trim() !== '' && option.value.trim() !== ''
+          );
+          
+          const variantText = validVariants.length > 0 
+            ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
             : '';
           return variantText;
         });
@@ -712,14 +712,14 @@ export default function Chatbot() {
         const itemQuantities = cartItems.map(item => item.quantity);
         const itemVariants = cartItems.map(item => {
           const variantOptions = item.variant_options || [];
-          const variantText = variantOptions.length > 0 
-            ? ` - ${variantOptions.map(option => {
-                // Check if option has valid name and value
-                if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
-                  return `${option.name}: ${option.value}`;
-                }
-                return null;
-              }).filter(Boolean).join(', ')}`
+          const validVariants = variantOptions.filter(option => 
+            option && option.name && option.value && 
+            option.name !== 'undefined' && option.value !== 'undefined' &&
+            option.name.trim() !== '' && option.value.trim() !== ''
+          );
+          
+          const variantText = validVariants.length > 0 
+            ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
             : '';
           return variantText;
         });
@@ -748,14 +748,14 @@ export default function Chatbot() {
       const itemQuantities = cartItems.map(item => item.quantity);
       const itemVariants = cartItems.map(item => {
         const variantOptions = item.variant_options || [];
-        const variantText = variantOptions.length > 0 
-          ? ` - ${variantOptions.map(option => {
-              // Check if option has valid name and value
-              if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
-                return `${option.name}: ${option.value}`;
-              }
-              return null;
-            }).filter(Boolean).join(', ')}`
+        const validVariants = variantOptions.filter(option => 
+          option && option.name && option.value && 
+          option.name !== 'undefined' && option.value !== 'undefined' &&
+          option.name.trim() !== '' && option.value.trim() !== ''
+        );
+        
+        const variantText = validVariants.length > 0 
+          ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
           : '';
         return variantText;
       });
