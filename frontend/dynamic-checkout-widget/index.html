@@ -100,25 +100,31 @@
             }
             
             setupEventListeners() {
-                this.button.addEventListener('click', () => {
+                this.button.addEventListener('click', async () => {
                     console.log('Button clicked! Cart URL:', this.cartUrl);
-                    if (this.cartUrl) {
+                    
+                    // Always try to get fresh cart data when clicked
+                    const cart = await this.checkCart();
+                    console.log('Fresh cart data on click:', cart);
+                    
+                    if (cart && cart.items && cart.items.length > 0) {
+                        // Create cart page with fresh data
+                        await this.createCartPage(cart.items);
+                        if (this.cartUrl) {
+                            window.open(this.cartUrl, '_blank');
+                        }
+                    } else if (this.cartUrl) {
+                        // Use existing cart URL
                         window.open(this.cartUrl, '_blank');
                     } else {
-                        // If no cart URL, try to create one with current cart
-                        this.checkCart().then(() => {
-                            if (this.cartUrl) {
-                                window.open(this.cartUrl, '_blank');
-                            } else {
-                                // Fallback - open a default cart page
-                                window.open('https://skincare-ai-backend.onrender.com/cart/new', '_blank');
-                            }
-                        });
+                        // Fallback - open a default cart page
+                        window.open('https://skincare-ai-backend.onrender.com/cart/new', '_blank');
                     }
                 });
                 
                 // Listen for messages from parent window (Shopify)
                 window.addEventListener('message', (event) => {
+                    console.log('Received message from parent:', event.data);
                     if (event.data.type === 'CART_UPDATED') {
                         this.updateButton(event.data.items || []);
                     }
@@ -138,16 +144,21 @@
                     const cartResponse = await fetch('/cart.js');
                     if (cartResponse.ok) {
                         const cart = await cartResponse.json();
+                        console.log('Cart data from current page:', cart);
                         this.updateButton(cart.items || []);
+                        return cart;
                     }
                 } catch (error) {
                     // If we're in an iframe, try to get cart from parent
                     if (window.parent && window.parent !== window) {
                         try {
+                            console.log('Trying to get cart from parent page...');
                             const parentCartResponse = await window.parent.fetch('/cart.js');
                             if (parentCartResponse.ok) {
                                 const cart = await parentCartResponse.json();
+                                console.log('Cart data from parent page:', cart);
                                 this.updateButton(cart.items || []);
+                                return cart;
                             }
                         } catch (parentError) {
                             console.log('Parent cart check failed:', parentError.message);
@@ -156,6 +167,7 @@
                         console.log('Cart check failed (normal if not on Shopify):', error.message);
                     }
                 }
+                return null;
             }
             
             updateButton(items) {
@@ -190,35 +202,43 @@
                         }];
                     }
                     
+                    const cartPayload = {
+                        items: items.map(item => ({
+                            product_title: item.product_title || item.title || 'Unknown Product',
+                            product_image: item.image || item.featured_image || 'https://via.placeholder.com/150',
+                            final_price: item.final_price || item.price * 100 || 5000,
+                            quantity: item.quantity || 1,
+                            variant_title: item.variant_title || '',
+                            product_handle: item.handle || 'product',
+                            product_url: item.product_url || `${window.location.origin}/products/${item.handle || 'product'}`
+                        })),
+                        user_info: {
+                            user_agent: navigator.userAgent,
+                            timestamp: new Date().toISOString(),
+                            source: 'simple_cart_button'
+                        }
+                    };
+                    
+                    console.log('Sending cart payload:', cartPayload);
+                    
                     const response = await fetch('https://skincare-ai-backend.onrender.com/api/cart/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            items: items.map(item => ({
-                                product_title: item.product_title || item.title || 'Unknown Product',
-                                product_image: item.image || item.featured_image || 'https://via.placeholder.com/150',
-                                final_price: item.final_price || item.price * 100 || 5000,
-                                quantity: item.quantity || 1,
-                                variant_title: item.variant_title || '',
-                                product_handle: item.handle || 'product',
-                                product_url: item.product_url || `${window.location.origin}/products/${item.handle || 'product'}`
-                            })),
-                            user_info: {
-                                user_agent: navigator.userAgent,
-                                timestamp: new Date().toISOString(),
-                                source: 'simple_cart_button'
-                            }
-                        })
+                        body: JSON.stringify(cartPayload)
                     });
+                    
+                    console.log('Cart creation response status:', response.status);
                     
                     if (response.ok) {
                         const cartData = await response.json();
+                        console.log('Cart creation response:', cartData);
                         this.cartUrl = `https://skincare-ai-backend.onrender.com/cart/${cartData.cart_id}`;
                         console.log('Cart page created:', this.cartUrl);
                     } else {
-                        console.error('Failed to create cart page:', response.status);
+                        const errorText = await response.text();
+                        console.error('Failed to create cart page:', response.status, errorText);
                         // Fallback URL
                         this.cartUrl = 'https://skincare-ai-backend.onrender.com/cart/new';
                     }
