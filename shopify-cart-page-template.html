@@ -290,7 +290,7 @@
             async loadCartData() {
                 try {
                     console.log('Loading cart data for ID:', this.cartId);
-                    const response = await fetch(`http://localhost:10000/api/cart/${this.cartId}`);
+                    const response = await fetch(`https://skincare-ai-backend.onrender.com/api/cart/${this.cartId}`);
                     
                     if (response.ok) {
                         this.cartData = await response.json();
