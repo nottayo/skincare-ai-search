@@ -1,0 +1,38 @@
+{%- if settings.cart_type == 'drawer' -%}
+  <div id="CartChatDrawer" class="drawer drawer--right">
+    <div class="drawer__fixed-header">
+      <div class="drawer__header">
+        <button id="CartTabBtn" class="drawer-tab active">Cart</button>
+        <button id="ChatTabBtn" class="drawer-tab">Chat</button>
+        <div class="drawer__close">
+          <button type="button" class="drawer__close-button js-drawer-close">
+            <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-close" viewBox="0 0 64 64"><path d="M19 17.61l27.12 27.13m0-27.12L19 44.74"/></svg>
+            <span class="icon__fallback-text">{{ 'cart.general.close_cart' | t }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="CartContainer" class="drawer__inner"></div>
+    <div id="ChatDrawer" class="drawer__inner" style="display:none"></div>
+  </div>
+{%- endif -%}
+
+<script>
+  function showCart() {
+    document.getElementById('CartContainer').style.display = '';
+    document.getElementById('ChatDrawer').style.display = 'none';
+    document.getElementById('CartTabBtn').classList.add('active');
+    document.getElementById('ChatTabBtn').classList.remove('active');
+  }
+  function showChat() {
+    document.getElementById('CartContainer').style.display = 'none';
+    document.getElementById('ChatDrawer').style.display = '';
+    document.getElementById('CartTabBtn').classList.remove('active');
+    document.getElementById('ChatTabBtn').classList.add('active');
+    if (window.renderMamaTegaChatbot) {
+      window.renderMamaTegaChatbot('ChatDrawer');
+    }
+  }
+  document.getElementById('CartTabBtn').onclick = showCart;
+  document.getElementById('ChatTabBtn').onclick = showChat;
+</script>

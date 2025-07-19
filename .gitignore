@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Embeddings and training data
+product_embeddings.json
+trainingdata.jsonl
+trainingdata_gpt35.jsonl
+*.jsonl
+
+# Credentials
+*.key
+*.pem
+
+# VSCode and editor settings
+.vscode/
+.DS_Store
+
+# Node modules
+node_modules/
+
+# Virtual environments
+venv/
+.venv/
+
+# Mac system files
+.DS_Store
