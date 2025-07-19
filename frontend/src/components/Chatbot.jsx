@@ -216,6 +216,29 @@ export default function Chatbot() {
     }
   }, [minimized]);
 
+  // Monitor cart changes for bubble text updates (even when minimized)
+  useEffect(() => {
+    const checkCart = () => {
+      fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          updateBubbleText(cart.items || []);
+        })
+        .catch(() => {
+          // If cart fetch fails, assume empty cart
+          updateBubbleText([]);
+        });
+    };
+
+    // Check cart immediately
+    checkCart();
+
+    // Set up interval to check cart every 30 seconds
+    const interval = setInterval(checkCart, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const timeStamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   // On new chat, if no name is stored, have the bot send the name prompt as the first message
@@ -313,6 +336,15 @@ export default function Chatbot() {
     
     setCartTimeout(timeout);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (cartTimeout) {
+        clearTimeout(cartTimeout);
+      }
+    };
+  }, [cartTimeout]);
 
   // Function to handle shopping completion flow
   const handleShoppingComplete = () => {
