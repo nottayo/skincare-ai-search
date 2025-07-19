@@ -8,6 +8,35 @@
   box-sizing: border-box !important;
 }
 
+/* Override Shopify theme styles for chatbot elements */
+.chatbot-widget p strong,
+.chatbot-widget .message-bubble p strong,
+.chatbot-widget .chat-message p strong,
+.chatbot-widget .message-bubble strong,
+.chatbot-widget .chat-message strong {
+  font-family: 'CraftworkGroteskMedium', Arial, sans-serif !important;
+  font-weight: 500 !important;
+  color: #f3f3f3 !important;
+  font-size: inherit !important;
+  letter-spacing: 0.5px !important;
+  text-transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override any inherited styles from main website */
+.chatbot-widget * {
+  font-family: inherit !important;
+}
+
+.chatbot-widget .message-bubble * {
+  font-family: 'CraftworkGroteskMedium', Arial, sans-serif !important;
+}
+
 /* Prevent zoom on input focus on mobile - comprehensive solution */
 @media screen and (max-width: 500px) {
   .input-pill input {
