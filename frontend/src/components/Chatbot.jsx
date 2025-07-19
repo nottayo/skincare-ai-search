@@ -172,15 +172,20 @@ export default function Chatbot() {
           const isNewCart = JSON.stringify(itemIds) !== JSON.stringify(lastCartIds);
           if (cart.items && cart.items.length > 0 && isNewCart) {
             const itemNames = cart.items.map(item => item.product_title);
-            const numberedItems = itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n');
+            const itemUrls = cart.items.map(item => item.url);
+            const numberedItems = itemNames.map((item, index) => `${index + 1}. [${item}](${itemUrls[index]})`).join('\n');
             
-            // Array of varied cart messages
+            // Create WhatsApp message with cart items
+            const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+            const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
+            
+            // Array of varied cart messages with links and WhatsApp option
             const cartMessages = [
-              `Hmm, you have excellent taste! I can see you've selected:\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?`,
-              `Great selection! Here's what I found in your cart:\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?`,
-              `Nice picks! Your cart contains:\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?`,
-              `I see you've chosen some quality items:\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?`,
-              `Fantastic choices! Here's what you have:\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?`
+              `Hmm, you have excellent taste! I can see you've selected:\n\n${numberedItems}\n\nDo you have any questions about these items or would you like to know about product availability?\n\nWould you like me to connect you to WhatsApp for personalized assistance? [Click here to chat on WhatsApp](${whatsappLink})`,
+              `Great selection! Here's what I found in your cart:\n\n${numberedItems}\n\nWould you like me to check if any of these are running low in stock?\n\nNeed more help? [Connect with us on WhatsApp](${whatsappLink})`,
+              `Nice picks! Your cart contains:\n\n${numberedItems}\n\nAny specific questions about these products or need help with anything else?\n\nFor personalized support, [chat with us on WhatsApp](${whatsappLink})`,
+              `I see you've chosen some quality items:\n\n${numberedItems}\n\nWould you like to know more about any of these or check their availability?\n\nWant expert advice? [Message us on WhatsApp](${whatsappLink})`,
+              `Fantastic choices! Here's what you have:\n\n${numberedItems}\n\nNeed any information about these products or want to explore similar items?\n\nFor detailed guidance, [reach out on WhatsApp](${whatsappLink})`
             ];
             
             // Pick a random message
@@ -191,7 +196,10 @@ export default function Chatbot() {
               {
                 type: 'bot',
                 text: randomMessage,
-                time: timeStamp()
+                time: timeStamp(),
+                isCartMessage: true,
+                cartItems: cart.items,
+                whatsappLink: whatsappLink
               }
             ]);
             localStorage.setItem('last_cart_ids', JSON.stringify(itemIds));
@@ -255,6 +263,14 @@ export default function Chatbot() {
     setMinimized(true);
     setBubbleVisible(true);
     setShowConversationMenu(false);
+  };
+
+  // Function to handle WhatsApp connection
+  const connectToWhatsApp = (message = '') => {
+    const defaultMessage = 'Hi MamaTega! I need help with my order.';
+    const whatsappMessage = message || defaultMessage;
+    const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
+    window.open(whatsappLink, '_blank');
   };
 
   const sendMessage = async (preset) => {
@@ -335,6 +351,30 @@ export default function Chatbot() {
     } catch (err) {
       console.error(err);
       answer = null;
+    }
+
+    // Check if user wants to connect to WhatsApp (after getting response)
+    const lowerPrompt = prompt.toLowerCase();
+    const whatsappKeywords = ['whatsapp', 'whats app', 'connect', 'message', 'chat', 'contact', 'help'];
+    const isWhatsAppRequest = whatsappKeywords.some(keyword => lowerPrompt.includes(keyword));
+    
+    // Check if this is a response to a cart message
+    const lastBotMessage = messages.filter(m => m.type === 'bot').pop();
+    const isCartResponse = lastBotMessage && lastBotMessage.isCartMessage;
+    
+    if (isWhatsAppRequest && isCartResponse) {
+      // Get cart items for WhatsApp message
+      const cartItems = lastBotMessage.cartItems || [];
+      const itemNames = cartItems.map(item => item.product_title);
+      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
+      connectToWhatsApp(whatsappMessage);
+      
+      // Add a confirmation message
+      answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
+    } else if (isWhatsAppRequest) {
+      // General WhatsApp request
+      connectToWhatsApp();
+      answer = "Great! I've opened WhatsApp for you. You can now chat directly with our team! 📱";
     }
 
     clearTimeout(waitingTimeout);
