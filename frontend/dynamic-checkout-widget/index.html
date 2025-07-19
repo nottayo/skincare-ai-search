@@ -117,8 +117,8 @@
                         // Use existing cart URL
                         window.open(this.cartUrl, '_blank');
                     } else {
-                        // Fallback - open your Shopify cart page
-                        window.open('https://shopmamatega.com/pages/add-to-cart', '_blank');
+                        // Fallback - open local cart page
+                        window.open('http://localhost:10000/cart/new', '_blank');
                     }
                 });
                 
@@ -221,7 +221,7 @@
                     
                     console.log('Sending cart payload:', cartPayload);
                     
-                    const response = await fetch('https://skincare-ai-backend.onrender.com/api/cart/create', {
+                    const response = await fetch('http://localhost:10000/api/cart/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -234,18 +234,18 @@
                     if (response.ok) {
                         const cartData = await response.json();
                         console.log('Cart creation response:', cartData);
-                        this.cartUrl = `https://shopmamatega.com/pages/add-to-cart?cart_id=${cartData.cart_id}`;
+                        this.cartUrl = `http://localhost:10000/cart/${cartData.cart_id}`;
                         console.log('Cart page created:', this.cartUrl);
                     } else {
                         const errorText = await response.text();
                         console.error('Failed to create cart page:', response.status, errorText);
                         // Fallback URL
-                        this.cartUrl = 'https://shopmamatega.com/pages/add-to-cart';
+                        this.cartUrl = 'http://localhost:10000/cart/new';
                     }
                 } catch (error) {
                     console.error('Error creating cart page:', error);
                     // Fallback URL
-                    this.cartUrl = 'https://shopmamatega.com/pages/add-to-cart';
+                    this.cartUrl = 'http://localhost:10000/cart/new';
                 }
             }
         }

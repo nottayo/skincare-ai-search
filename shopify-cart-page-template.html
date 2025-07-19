@@ -129,6 +129,76 @@
             box-shadow: 0 6px 25px rgba(59, 130, 246, 0.7), 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
         }
         
+        .cart-button-primary {
+            background: #000 !important;
+            color: white !important;
+        }
+        
+        .cart-button-secondary {
+            background: #f8f9fa !important;
+            color: #000 !important;
+            border: 2px solid #000 !important;
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .order-instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .order-instructions h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .instruction-steps {
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .step-number {
+            background: #000;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .step-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .contact-info {
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        
+        .contact-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
         .loading {
             text-align: center;
             padding: 40px;
@@ -220,7 +290,7 @@
             async loadCartData() {
                 try {
                     console.log('Loading cart data for ID:', this.cartId);
-                    const response = await fetch(`https://skincare-ai-backend.onrender.com/api/cart/${this.cartId}`);
+                    const response = await fetch(`http://localhost:10000/api/cart/${this.cartId}`);
                     
                     if (response.ok) {
                         this.cartData = await response.json();
@@ -268,7 +338,8 @@
                     <div class="cart-item">
                         <img src="${item.product_image || 'https://via.placeholder.com/80'}" 
                              alt="${item.product_title}" 
-                             class="item-image">
+                             class="item-image"
+                             onerror="this.src='https://via.placeholder.com/80'">
                         <div class="item-details">
                             <div class="item-title">${item.product_title}</div>
                             ${item.variant_title ? `<div class="item-variant">${item.variant_title}</div>` : ''}
@@ -287,9 +358,38 @@
                             <span>Subtotal:</span>
                             <span>₦${(subtotal / 100).toLocaleString()}</span>
                         </div>
-                        <button class="cart-button" onclick="window.open('${window.location.origin}', '_blank')">
-                            🛍️ Continue Shopping
-                        </button>
+                        
+                        <div class="order-instructions">
+                            <h3>📱 How to Order:</h3>
+                            <div class="instruction-steps">
+                                <div class="step">
+                                    <span class="step-number">1</span>
+                                    <span class="step-text">Copy this cart link and send it to us on WhatsApp</span>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">2</span>
+                                    <span class="step-text">We'll confirm your order and provide payment details</span>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">3</span>
+                                    <span class="step-text">After payment, we'll deliver to your address</span>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-info">
+                                <p><strong>📍 Store Location:</strong> Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos</p>
+                                <p><strong>🕒 Hours:</strong> Mon–Sat 8AM–8PM, Sun 1PM–7PM</p>
+                            </div>
+                        </div>
+                        
+                        <div class="cart-actions">
+                            <button class="cart-button cart-button-primary" onclick="copyCartLink()">
+                                📋 Copy Cart Link
+                            </button>
+                            <button class="cart-button cart-button-secondary" onclick="window.open('${window.location.origin}', '_blank')">
+                                🛍️ Continue Shopping
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -329,6 +429,23 @@
             });
         } else {
             new ShopifyCartPage();
+        }
+        
+        // Copy cart link function
+        function copyCartLink() {
+            const currentUrl = window.location.href;
+            navigator.clipboard.writeText(currentUrl).then(() => {
+                alert('Cart link copied! Share this link on WhatsApp to place your order.');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = currentUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Cart link copied! Share this link on WhatsApp to place your order.');
+            });
         }
     </script>
 </body>
