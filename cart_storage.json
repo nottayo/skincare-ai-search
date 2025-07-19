@@ -3,24 +3,204 @@
     "id": "CART000001",
     "items": [
       {
-        "product_title": "Test Product",
-        "product_image": "https://via.placeholder.com/150",
-        "final_price": 5000,
+        "product_title": "Tia'm My Signature Red C Serum",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8809367895128.png?v=1702342094",
+        "final_price": 1250000,
+        "quantity": 2,
+        "variant_title": "30ML",
+        "product_handle": "8809367895128",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8809367895128"
+      },
+      {
+        "product_title": "Tia'm Vita B3 Mist Toner",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8809373463151.png?v=1702342098",
+        "final_price": 1000000,
+        "quantity": 1,
+        "variant_title": "200ML",
+        "product_handle": "8809373463151",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8809373463151"
+      },
+      {
+        "product_title": "Fair And White Brightening Tube Cream",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3760078080195_c977cdde-c80d-42b6-8432-7ee0314e7f28.png?v=1702115490",
+        "final_price": 150000,
+        "quantity": 5,
+        "variant_title": "",
+        "product_handle": "3760078080195",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3760078080195"
+      },
+      {
+        "product_title": "Aunt Jackie's Nourish My Hair Flaxseed & Monoi",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/034285695064.png?v=1702105338",
+        "final_price": 600000,
+        "quantity": 2,
+        "variant_title": "",
+        "product_handle": "034285695064",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/034285695064"
+      },
+      {
+        "product_title": "Maybelline Super Stay 24Hr Lip Color",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3600531300340_d5660d62-05c5-4763-b40d-71e3bd5cb4c0.png?v=1702114029",
+        "final_price": 600000,
+        "quantity": 1,
+        "variant_title": "Maybelline Super Stay 16N801",
+        "product_handle": "3600531300319",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3600531300319"
+      },
+      {
+        "product_title": "Maybelline Super Stay 24Hr Lip Color",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3600531300319_3c3a776a-5beb-4a57-9930-8246e9b47c18.png?v=1702114029",
+        "final_price": 600000,
+        "quantity": 2,
+        "variant_title": "Maybelline Super Stay 24Hr Color 16N401",
+        "product_handle": "3600531300319",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3600531300319"
+      },
+      {
+        "product_title": "Twinings Lemon Green Tea",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/070177264574_cea0fdf0-e18a-42e3-81ae-1edaace46b95.png?v=1702107334",
+        "final_price": 350000,
+        "quantity": 2,
+        "variant_title": "40g",
+        "product_handle": "070177264574",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/070177264574"
+      },
+      {
+        "product_title": "Twinings Mint Green Tea",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/070177264581_b3901b33-1056-416a-aee3-94c9d2ba4e81.png?v=1702107336",
+        "final_price": 350000,
+        "quantity": 1,
+        "variant_title": "40g",
+        "product_handle": "070177264581",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/070177264581"
+      },
+      {
+        "product_title": "Sleek Suede Effect",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/96011751_85ff6590-06a6-4f49-a2db-7bae1d4d4ae8.png?v=1702345171",
+        "final_price": 300000,
+        "quantity": 2,
+        "variant_title": "Sleek Suede Effect Se04",
+        "product_handle": "96011713",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/96011713"
+      },
+      {
+        "product_title": "Rimmel London Insta Duo Contour Stick",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3614224363932_70a60def-5c4e-4865-8ede-df44023f4989.png?v=1702114908",
+        "final_price": 500000,
+        "quantity": 1,
+        "variant_title": "Rimmel London Insta Duo Contour Stick",
+        "product_handle": "3614224363932",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3614224363932"
+      },
+      {
+        "product_title": "Cosrx Propolis Light Cream",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8809598451032.png?v=1702342171",
+        "final_price": 1700000,
+        "quantity": 1,
+        "variant_title": "65ML",
+        "product_handle": "8809598451032",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8809598451032"
+      },
+      {
+        "product_title": "Simple Vital Vitamin Day Cream",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8710447486337.png?v=1702339875",
+        "final_price": 300000,
+        "quantity": 2,
+        "variant_title": "",
+        "product_handle": "8710447486337",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8710447486337"
+      },
+      {
+        "product_title": "Black Opium Perfume",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3365440788039_898323bd-c0e6-4f25-a9d8-13b4e1e23cc9.png?v=1702112446",
+        "final_price": 10000000,
+        "quantity": 3,
+        "variant_title": "",
+        "product_handle": "3365440788039",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3365440788039"
+      },
+      {
+        "product_title": "Tia'm Snail And Azulene Low Ph Cleanser",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8809416471860.png?v=1702342143",
+        "final_price": 950000,
+        "quantity": 6,
+        "variant_title": "200ML",
+        "product_handle": "8809416471860",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8809416471860"
+      },
+      {
+        "product_title": "Fair And White Exclusive Whitenizer Vitamin C Tube Cream",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/877917005318_f1b08b19-d102-4c7c-b89a-94dcf5987b6c.png?v=1702341915",
+        "final_price": 170000,
+        "quantity": 4,
+        "variant_title": "",
+        "product_handle": "877917005318",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/877917005318"
+      },
+      {
+        "product_title": "Acqua Di Paris Essenza Intensa Black Oud",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/3700066700711_6bc7695d-57d8-48a2-8186-6e41c171e57c.png?v=1702115167",
+        "final_price": 3700000,
         "quantity": 1,
         "variant_title": "",
-        "product_handle": "test-product",
-        "product_url": "https://example.com"
+        "product_handle": "3700066700711",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/3700066700711"
+      },
+      {
+        "product_title": "Fair And White Miss White Lotion Purple",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/877917004519.png?v=1702341868",
+        "final_price": 600000,
+        "quantity": 1,
+        "variant_title": "207ML",
+        "product_handle": "877917004519",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/877917004519"
+      },
+      {
+        "product_title": "Simple Triple Protect Moisturiser Spf30",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/8717163866900_bc3f9e37-97a7-4f03-a479-8c1e740100c6.png?v=1702341069",
+        "final_price": 350000,
+        "quantity": 1,
+        "variant_title": "40ML",
+        "product_handle": "8717163866900",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/8717163866900"
+      },
+      {
+        "product_title": "(Malin+Goetz) Acne Treatment Night time",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/891211000213.png?v=1702344571",
+        "final_price": 600000,
+        "quantity": 1,
+        "variant_title": "14ML",
+        "product_handle": "891211000213",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/891211000213"
+      },
+      {
+        "product_title": "Olay Vitamin C B3 Haydrating Body Wash",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/030772059944_20c3b361-3cbe-4eb8-91a2-d592a91069a9.png?v=1702104978",
+        "final_price": 1500000,
+        "quantity": 2,
+        "variant_title": "591ML",
+        "product_handle": "030772059944",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/030772059944"
+      },
+      {
+        "product_title": "Tia'm Snail & Azulene Water Essence",
+        "product_image": "https://cdn.shopify.com/s/files/1/0282/6557/8584/products/V1031444.png?v=1702348340",
+        "final_price": 1000000,
+        "quantity": 2,
+        "variant_title": "180ML",
+        "product_handle": "v1031444",
+        "product_url": "https://skincare-ai-search-widget.onrender.com/products/v1031444"
       }
     ],
-    "total_price": 5000,
-    "created_at": "2025-07-19T05:05:15.038164+00:00",
-    "updated_at": "2025-07-19T05:05:15.038172+00:00",
+    "total_price": 26570000,
+    "created_at": "2025-07-19T05:09:49.577641+00:00",
+    "updated_at": "2025-07-19T05:09:49.577649+00:00",
     "user_info": {
-      "user_agent": "test",
-      "timestamp": "2024-01-01T00:00:00Z",
-      "source": "test"
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "timestamp": "2025-07-19T05:09:49.559Z",
+      "source": "simple_cart_button"
     },
-    "item_count": 1,
+    "item_count": 21,
     "never_expires": true,
     "persistent": true
   },
@@ -218,11 +398,11 @@
       }
     ],
     "total_price": 26570000,
-    "created_at": "2025-07-19T05:05:33.136529+00:00",
-    "updated_at": "2025-07-19T05:05:33.136535+00:00",
+    "created_at": "2025-07-19T05:09:49.584282+00:00",
+    "updated_at": "2025-07-19T05:09:49.584286+00:00",
     "user_info": {
       "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-      "timestamp": "2025-07-19T05:05:33.122Z",
+      "timestamp": "2025-07-19T05:09:49.565Z",
       "source": "simple_cart_button"
     },
     "item_count": 21,
@@ -423,11 +603,11 @@
       }
     ],
     "total_price": 26570000,
-    "created_at": "2025-07-19T05:05:33.136776+00:00",
-    "updated_at": "2025-07-19T05:05:33.136778+00:00",
+    "created_at": "2025-07-19T05:09:49.721181+00:00",
+    "updated_at": "2025-07-19T05:09:49.721204+00:00",
     "user_info": {
       "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-      "timestamp": "2025-07-19T05:05:33.124Z",
+      "timestamp": "2025-07-19T05:09:49.718Z",
       "source": "simple_cart_button"
     },
     "item_count": 21,

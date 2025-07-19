@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Cart Button Embed Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        .step {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛒 Shopify Cart Button Embed Code</h1>
+    
+    <div class="step">
+        <h2>Step 1: Add this code to your Shopify cart template</h2>
+        <p>Replace your existing Instagram button in <code>snippets/ajax-cart-template.liquid</code> with this:</p>
+    </div>
+    
+    <div class="code-block">
+&lt;!-- MamaTega Cart Button --&gt;
+&lt;div id="mamatega-cart-button-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"&gt;
+    &lt;iframe 
+        src="https://cart-button-static.onrender.com" 
+        width="300" 
+        height="80" 
+        frameborder="0" 
+        scrolling="no"
+        style="border: none; border-radius: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+    &gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+// Cart monitoring script
+(function() {
+    let lastCartCount = 0;
+    
+    function updateCartButton() {
+        fetch('/cart.js')
+            .then(response =&gt; response.json())
+            .then(cart =&gt; {
+                const currentCount = cart.item_count || 0;
+                if (currentCount !== lastCartCount) {
+                    lastCartCount = currentCount;
+                    
+                    // Send message to iframe
+                    const iframe = document.querySelector('#mamatega-cart-button-container iframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            type: 'CART_UPDATED',
+                            items: cart.items || []
+                        }, '*');
+                    }
+                }
+            })
+            .catch(error =&gt; console.log('Cart check failed:', error));
+    }
+    
+    // Check cart every 5 seconds
+    setInterval(updateCartButton, 5000);
+    
+    // Initial check
+    updateCartButton();
+    
+    // Also check when page loads
+    document.addEventListener('DOMContentLoaded', updateCartButton);
+})();
+&lt;/script&gt;
+    </div>
+    
+    <div class="step">
+        <h2>Step 2: Alternative - Direct Button (No iframe)</h2>
+        <p>If you prefer a direct button without iframe:</p>
+    </div>
+    
+    <div class="code-block">
+&lt;!-- Direct Cart Button --&gt;
+&lt;button id="mamatega-direct-cart-btn" 
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; 
+               background: #000; color: white; border: none; border-radius: 25px; 
+               padding: 15px 25px; font-size: 14px; font-weight: 600; cursor: pointer;
+               box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.2);"&gt;
+    🛒 Here is my cart (&lt;span id="cart-count"&gt;0&lt;/span&gt; items)
+&lt;/button&gt;
+
+&lt;script&gt;
+(function() {
+    const button = document.getElementById('mamatega-direct-cart-btn');
+    const countSpan = document.getElementById('cart-count');
+    
+    function updateCartCount() {
+        fetch('/cart.js')
+            .then(response =&gt; response.json())
+            .then(cart =&gt; {
+                const count = cart.item_count || 0;
+                countSpan.textContent = count;
+                
+                if (count &gt; 0) {
+                    button.style.display = 'block';
+                } else {
+                    button.style.display = 'none';
+                }
+            })
+            .catch(error =&gt; console.log('Cart check failed:', error));
+    }
+    
+    button.addEventListener('click', async () =&gt; {
+        try {
+            const cartResponse = await fetch('/cart.js');
+            const cart = await cartResponse.json();
+            
+            if (cart.items && cart.items.length &gt; 0) {
+                // Create cart page
+                const response = await fetch('https://skincare-ai-backend.onrender.com/api/cart/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: cart.items,
+                        user_info: {
+                            user_agent: navigator.userAgent,
+                            timestamp: new Date().toISOString(),
+                            source: 'shopify_direct'
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const cartData = await response.json();
+                    window.open(`https://skincare-ai-backend.onrender.com/cart/${cartData.cart_id}`, '_blank');
+                }
+            }
+        } catch (error) {
+            console.error('Error creating cart:', error);
+        }
+    });
+    
+    // Update every 5 seconds
+    setInterval(updateCartCount, 5000);
+    updateCartCount();
+})();
+&lt;/script&gt;
+    </div>
+    
+    <div class="warning">
+        <h3>⚠️ Important Notes:</h3>
+        <ul>
+            <li><strong>Static Site Only:</strong> The cart button is now served as a static site to avoid Render build limits</li>
+            <li><strong>API Still Works:</strong> The backend API at <code>https://skincare-ai-backend.onrender.com</code> is still available for cart creation</li>
+            <li><strong>Local Testing:</strong> For local testing, use <code>http://localhost:10000/cart-button</code></li>
+            <li><strong>Production:</strong> For production, use <code>https://cart-button-static.onrender.com</code></li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h2>Step 3: Test Your Cart Button</h2>
+        <ol>
+            <li>Add the code to your Shopify cart template</li>
+            <li>Add items to your cart on your Shopify site</li>
+            <li>Click the cart button</li>
+            <li>Should open a cart page with your items</li>
+        </ol>
+    </div>
+    
+    <div class="step">
+        <h2>Step 4: Customize Styling</h2>
+        <p>You can customize the button position and styling by modifying the CSS in the embed code.</p>
+    </div>
+</body>
+</html> 
