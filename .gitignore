@@ -35,4 +35,3 @@ venv/
 chat_logs.csv
 *.csv
 logs/
-cart_storage.json
