@@ -14,8 +14,8 @@
 .chatbot-widget .chat-message p strong,
 .chatbot-widget .message-bubble strong,
 .chatbot-widget .chat-message strong {
-  font-family: 'CraftworkGroteskMedium', Arial, sans-serif !important;
-  font-weight: 500 !important;
+  font-family: 'FivoSansLight', Arial, sans-serif !important;
+  font-weight: 300 !important;
   color: #f3f3f3 !important;
   font-size: inherit !important;
   letter-spacing: 0.5px !important;
@@ -34,7 +34,7 @@
 }
 
 .chatbot-widget .message-bubble * {
-  font-family: 'CraftworkGroteskMedium', Arial, sans-serif !important;
+  font-family: 'FivoSansLight', Arial, sans-serif !important;
 }
 
 /* Prevent zoom on input focus on mobile - comprehensive solution */
