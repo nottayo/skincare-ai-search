@@ -1,5 +1,17 @@
 # render.yaml  ── describes all Render services in this repo
 services:
+  # ── Static site for cart button ─────────────────────────
+  - type: web
+    name: cart-button-static
+    runtime: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishPath: ./frontend/dynamic-checkout-widget
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    plan: free
+
   # ── Flask web API ───────────────────────────────────────
   - type: web
     name: product-search-api            # shows in Render dashboard

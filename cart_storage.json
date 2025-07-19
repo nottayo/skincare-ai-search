@@ -1,1 +1,27 @@
-{"CART000001":{"id":"CART000001","items":[],"total_price":0,"created_at":"2024-01-01T00:00:00Z","updated_at":"2024-01-01T00:00:00Z","user_info":{},"item_count":0,"never_expires":true,"persistent":true}}
+{
+  "CART000001": {
+    "id": "CART000001",
+    "items": [
+      {
+        "product_title": "Test Product",
+        "product_image": "https://via.placeholder.com/150",
+        "final_price": 5000,
+        "quantity": 1,
+        "variant_title": "",
+        "product_handle": "test-product",
+        "product_url": "https://example.com"
+      }
+    ],
+    "total_price": 5000,
+    "created_at": "2025-07-19T05:00:24.859944+00:00",
+    "updated_at": "2025-07-19T05:00:24.859949+00:00",
+    "user_info": {
+      "user_agent": "test",
+      "timestamp": "2024-01-01T00:00:00Z",
+      "source": "test"
+    },
+    "item_count": 1,
+    "never_expires": true,
+    "persistent": true
+  }
+}
