@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Cart Button</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+        }
+        
+        .cart-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .cart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+        }
+        
+        .cart-icon {
+            font-size: 18px;
+        }
+        
+        .item-count {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <button class="cart-button" id="cartButton">
+        <span class="cart-icon">🛒</span>
+        <span id="cartText">Here is my cart</span>
+        <span class="item-count" id="itemCount">0</span>
+    </button>
+
+    <script>
+        class SimpleCartButton {
+            constructor() {
+                this.button = document.getElementById('cartButton');
+                this.cartText = document.getElementById('cartText');
+                this.itemCount = document.getElementById('itemCount');
+                this.itemCountNum = 0;
+                
+                this.init();
+            }
+            
+            async init() {
+                this.button.addEventListener('click', () => this.handleClick());
+                await this.checkShopifyCart();
+            }
+            
+            async checkShopifyCart() {
+                try {
+                    // Try to fetch Shopify cart
+                    const response = await fetch('/cart.js');
+                    if (response.ok) {
+                        const cart = await response.json();
+                        this.itemCountNum = cart.item_count || 0;
+                        this.updateDisplay();
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Not on Shopify or cart not available');
+                }
+                
+                // Fallback: show empty cart
+                this.itemCountNum = 0;
+                this.updateDisplay();
+            }
+            
+            updateDisplay() {
+                this.itemCount.textContent = this.itemCountNum;
+                this.cartText.textContent = this.itemCountNum === 0 ? 'Here is my cart' : 'View my cart';
+            }
+            
+            handleClick() {
+                // Open Shopify cart or a simple cart page
+                if (window.Shopify && window.Shopify.theme) {
+                    // On Shopify site - open cart drawer or cart page
+                    window.location.href = '/cart';
+                } else {
+                    // Not on Shopify - show a simple message
+                    alert('Cart functionality requires Shopify integration');
+                }
+            }
+        }
+        
+        // Initialize cart button when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SimpleCartButton();
+        });
+    </script>
+</body>
+</html> 
