@@ -80,6 +80,12 @@ export default function Chatbot() {
     return localStorage.getItem('name_asked_before') === 'true';
   });
   const [bubbleText, setBubbleText] = useState('Ask MamaTega');
+  
+  // Smart cart tracking states
+  const [lastCartState, setLastCartState] = useState([]);
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [lastCartUpdateTime, setLastCartUpdateTime] = useState(null);
+  const [cartItemsAdded, setCartItemsAdded] = useState([]);
 
   const [isExciting, setIsExciting] = useState(false);
   const [inactivityTimeout, setInactivityTimeout] = useState(null);
@@ -135,9 +141,12 @@ export default function Chatbot() {
     localStorage.setItem('chat_messages', JSON.stringify(messages));
   }, [messages]);
 
-  // Scroll to bottom when chat is opened
+  // Scroll to bottom when chat is opened and track user interaction
   useEffect(() => {
     if (!minimized) {
+      // Mark that user has interacted by opening the chat
+      setUserHasInteracted(true);
+      
       setTimeout(() => {
         endRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -281,22 +290,59 @@ export default function Chatbot() {
     }
   }, [minimized]);
 
-  // Monitor cart changes for bubble text updates (even when minimized)
+  // Smart cart monitoring - tracks cart changes and user interaction
   useEffect(() => {
     const checkCart = () => {
       fetch('/cart.js')
         .then(res => res.json())
         .then(cart => {
-          const currentCartIds = JSON.stringify((cart.items || []).map(item => item.id).sort());
-          const lastCartIds = JSON.parse(localStorage.getItem('last_cart_ids') || '[]');
+          const currentCartItems = cart.items || [];
+          const currentCartIds = currentCartItems.map(item => item.id).sort();
+          const lastCartIds = lastCartState.map(item => item.id).sort();
           
-          // Only update bubble text if cart actually changed
-          if (currentCartIds !== JSON.stringify(lastCartIds)) {
-            updateBubbleText(cart.items || []);
+          // Check if cart actually changed
+          if (JSON.stringify(currentCartIds) !== JSON.stringify(lastCartIds)) {
+            // Find newly added items
+            const newItems = currentCartItems.filter(item => 
+              !lastCartState.some(lastItem => lastItem.id === item.id)
+            );
+            
+            // Find removed items
+            const removedItems = lastCartState.filter(item => 
+              !currentCartItems.some(currentItem => currentItem.id === item.id)
+            );
+            
+            // Update cart state
+            setLastCartState(currentCartItems);
+            setLastCartUpdateTime(Date.now());
+            
+            // Handle cart changes based on user interaction
+            if (newItems.length > 0) {
+              // Items were added
+              setCartItemsAdded(prev => [...prev, ...newItems]);
+              
+              // Only update bubble if user hasn't interacted since last cart update
+              if (!userHasInteracted || !lastCartUpdateTime || (Date.now() - lastCartUpdateTime) > 30000) {
+                updateBubbleText(currentCartItems, newItems);
+              }
+            } else if (removedItems.length > 0) {
+              // Items were removed
+              setCartItemsAdded(prev => prev.filter(item => 
+                !removedItems.some(removed => removed.id === item.id)
+              ));
+              
+              // Update bubble text for cart changes
+              updateBubbleText(currentCartItems);
+            }
+            
+            // Store cart IDs in localStorage for persistence
+            localStorage.setItem('last_cart_ids', JSON.stringify(currentCartIds));
           }
         })
         .catch(() => {
           // If cart fetch fails, assume empty cart
+          setLastCartState([]);
+          setCartItemsAdded([]);
           updateBubbleText([]);
         });
     };
@@ -308,7 +354,18 @@ export default function Chatbot() {
     const interval = setInterval(checkCart, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [lastCartState, userHasInteracted, lastCartUpdateTime]);
+
+  // Reset user interaction state after 5 minutes of inactivity
+  useEffect(() => {
+    if (userHasInteracted) {
+      const resetTimer = setTimeout(() => {
+        setUserHasInteracted(false);
+      }, 5 * 60 * 1000); // 5 minutes
+
+      return () => clearTimeout(resetTimer);
+    }
+  }, [userHasInteracted]);
 
   const timeStamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -361,6 +418,10 @@ export default function Chatbot() {
     // Reset name asked flag for new conversation
     setNameAskedBefore(false);
     localStorage.removeItem('name_asked_before');
+    // Reset smart cart tracking states
+    setUserHasInteracted(false);
+    setCartItemsAdded([]);
+    setLastCartUpdateTime(null);
     // Remove the user label from user message bubbles
   };
 
@@ -401,17 +462,34 @@ export default function Chatbot() {
     window.open(instagramLink, '_blank');
   };
 
-  // Function to update bubble text based on cart activity
-  const updateBubbleText = (cartItems) => {
+  // Smart function to update bubble text based on cart activity
+  const updateBubbleText = (cartItems, newItems = []) => {
     if (cartItems.length === 0) {
       setBubbleText('Ask MamaTega');
       setIsExciting(false);
       return;
     }
     
-    // Use only one fun message when items are added to cart
-    setBubbleText('Helllllllloooooo! 👋');
-    setIsExciting(true);
+    // If new items were added, create a specific message
+    if (newItems.length > 0) {
+      const itemNames = newItems.map(item => item.product_title);
+      let message;
+      
+      if (newItems.length === 1) {
+        message = `Added ${itemNames[0]} to cart! 🛒`;
+      } else if (newItems.length === 2) {
+        message = `Added ${itemNames[0]} & ${itemNames[1]} to cart! 🛒`;
+      } else {
+        message = `Added ${newItems.length} items to cart! 🛒`;
+      }
+      
+      setBubbleText(message);
+      setIsExciting(true);
+    } else {
+      // General cart message if no specific new items
+      setBubbleText('Helllllllloooooo! 👋');
+      setIsExciting(true);
+    }
   };
 
   // Function to send inactivity prompts
@@ -501,6 +579,9 @@ export default function Chatbot() {
   const sendMessage = async (preset) => {
     const prompt = (preset !== undefined ? preset : input).trim();
     if (!prompt) return;
+
+    // Mark that user has interacted by sending a message
+    setUserHasInteracted(true);
 
     // Clear inactivity timeout when user sends a message
     if (inactivityTimeout) {
