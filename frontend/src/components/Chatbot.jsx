@@ -396,8 +396,8 @@ export default function Chatbot() {
   const connectToInstagram = (message = '') => {
     const defaultMessage = 'Hi MamaTega! I need help with my order.';
     const instagramMessage = message || defaultMessage;
-    // Instagram DM URL format: https://www.instagram.com/direct/t/username/
-    const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
+    // Instagram profile URL
+    const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
     window.open(instagramLink, '_blank');
   };
 
@@ -465,7 +465,7 @@ export default function Chatbot() {
         
         const whatsappMessage = `Hi MamaTega! I'd like to complete my order:\n\n${itemDetails}\n\nTotal: $${totalPrice}\n\nCan you help me process this order?`;
         const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-        const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
+        const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
         
         const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
         
@@ -484,7 +484,7 @@ export default function Chatbot() {
       })
       .catch(() => {
         // Fallback if cart fetch fails
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
         
         setMessages(m => [
           ...m,
