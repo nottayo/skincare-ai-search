@@ -468,6 +468,7 @@
   margin: 0 !important;
   line-height: 1 !important;
   text-align: right !important;
+  margin-right: -25px !important
 }
 
 /* Remove userGlow animation and keyframes */
@@ -1776,6 +1777,7 @@ div.chatbot-bubble {
   line-height: 1 !important;
   text-align: right !important;
   z-index: 10 !important;
+  margin-right: -20px !important
 }
 
 .chat-message.user .message-bubble,
@@ -1788,7 +1790,7 @@ div.chatbot-bubble {
   right: 10px !important;
   bottom: 8px !important;
   color: #fff !important;
-  font-size: 12px !important;
+  font-size: 10px !important;
   white-space: nowrap !important;
   background: none !important;
   border: none !important;
