@@ -143,8 +143,19 @@ def get_history(session_id):
     return chat_histories[session_id]
 
 def is_product_intent(text: str) -> bool:
-    # Don't trigger for vague requests
+    # Don't trigger for vague requests or simple responses
     vague_phrases = ["i need something", "help me", "i need help", "what do you have", "show me"]
+    simple_responses = ["yes", "no", "okay", "ok", "thanks", "thank you", "sure", "maybe"]
+    
+    # Check for simple responses (single words or very short phrases)
+    text_clean = text.strip().lower()
+    if len(text_clean.split()) <= 2 and text_clean in simple_responses:
+        return False
+    
+    # Check for names (capitalized single words that aren't product names)
+    if len(text_clean.split()) == 1 and text_clean[0].isupper() and text_clean not in ["soap", "cream", "lotion", "buy", "order", "price", "skincare", "niacinamide"]:
+        return False
+    
     if any(phrase in text.lower() for phrase in vague_phrases):
         return False
     
@@ -450,12 +461,14 @@ IMPORTANT RULES (ALWAYS FOLLOW):
 CONVERSATION HANDLING:
 - For casual greetings like "hi", "hello", "you good?", "how are you" - respond naturally with a warm greeting and ask how you can help with skincare or beauty products.
 - For casual responses like "okay", "thanks", "alright" - acknowledge warmly and ask if they need help with anything specific.
+- For names or simple responses like "Tayo", "John", "yes", "no" - respond naturally without searching for products.
 - For vague requests like "I need something" or "help me" - take charge by asking clarifying questions about their skin concerns, preferences, or what they're looking for.
 - Only search for products when the user provides specific details about what they want.
 - For general conversation, be friendly and helpful without forcing product recommendations.
 - NEVER say "sorting through product list" or similar phrases unless the user specifically asks for product recommendations.
 - For casual conversation, respond naturally without mentioning products or searching.
 - ALWAYS ask follow-up questions when the user's request is unclear or vague.
+- NEVER search products for simple acknowledgments, names, or basic responses.
 
 You are the MamaTega Assistant for MamaTega Cosmetics.
 Store Details:
@@ -691,7 +704,10 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
             history.append({"role": "assistant", "content": answer})
         except Exception as e:
             logger.error("GPT error: %s", e)
-            answer = "Sorry, something went wrong. Please try again later."
+            if "429" in str(e) or "rate limit" in str(e).lower():
+                answer = "I'm busy at the moment assisting other customers. I'll be with you shortly!"
+            else:
+                answer = "Sorry, something went wrong. Please try again later."
 
         # 13) Persist last_results & log
         last_results[session_id] = results
