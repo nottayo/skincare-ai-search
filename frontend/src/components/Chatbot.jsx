@@ -86,6 +86,7 @@ export default function Chatbot() {
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [lastCartUpdateTime, setLastCartUpdateTime] = useState(null);
   const [cartItemsAdded, setCartItemsAdded] = useState([]);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
 
   const [isExciting, setIsExciting] = useState(false);
   const [inactivityTimeout, setInactivityTimeout] = useState(null);
@@ -137,19 +138,19 @@ export default function Chatbot() {
   }, [minimized]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll for truly new messages, not updates
+    if (messages.length > 0 && shouldScrollToBottom) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setShouldScrollToBottom(false); // Reset after scrolling
+    }
     localStorage.setItem('chat_messages', JSON.stringify(messages));
-  }, [messages]);
+  }, [messages, shouldScrollToBottom]);
 
-  // Scroll to bottom when chat is opened and track user interaction
+  // Track user interaction when chat is opened
   useEffect(() => {
     if (!minimized) {
       // Mark that user has interacted by opening the chat
       setUserHasInteracted(true);
-      
-      setTimeout(() => {
-        endRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
       
       // Set up initial inactivity timeout when chat opens
       const initialInactivityTimer = setTimeout(() => {
@@ -481,7 +482,8 @@ export default function Chatbot() {
           time: timeStamp(),
           cartItems: cartItems,
           whatsappLink: whatsappLink,
-          instagramLink: instagramLink
+          instagramLink: instagramLink,
+          isExistingUpdate: true // Mark as update to prevent auto-scroll
         };
         
         return updatedMessages;
@@ -643,7 +645,10 @@ export default function Chatbot() {
     }
 
     // 1) Add user bubble
-    setMessages(m => [...m, { type: 'user', text: prompt, time: timeStamp() }]);
+    setMessages(m => {
+      setShouldScrollToBottom(true); // Trigger scroll for user message
+      return [...m, { type: 'user', text: prompt, time: timeStamp() }];
+    });
     setInput('');
     setLoading(true);
     setSelectedSuggestion(null); // Reset selection after sending
@@ -895,6 +900,10 @@ export default function Chatbot() {
         // Only show fallback if 5 minutes have passed (handled by waTimeout above)
         return withoutTyping;
       }
+      
+      // Trigger scroll for new bot response
+      setShouldScrollToBottom(true);
+      
       return [
         ...withoutTyping,
         { type: 'bot', text: answer, results, view_all_link, time: timeStamp() }
