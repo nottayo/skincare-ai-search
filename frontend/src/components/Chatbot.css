@@ -134,7 +134,7 @@
   width: 360px !important;
   max-height: 60vh !important;
   height: 60vh !important;
-  background: #212121 !important;
+  background: rgba(33, 33, 33, 0.5) !important;
   color: #f3f3f3 !important;
   border-radius: 20px 20px 20px 8px !important;
   box-shadow: 
@@ -189,7 +189,7 @@
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
 .chat-header {
-  background: #111;
+  background: rgba(17, 17, 17, 0.8);
   color: #fff;
   padding: 20px 16px;
   position: relative;
@@ -390,7 +390,7 @@
   min-height: 0;
   padding: 16px;
   padding-bottom: 8px; /* Further reduce gap above input bar */
-  background: #212121 !important;
+  background: rgba(33, 33, 33, 0.5) !important;
   display: flex;
   flex-direction: column;
   gap: 8px; /* Reduce gap between messages */
@@ -655,7 +655,7 @@
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid #333;
-  background: #212121;
+  background: rgba(33, 33, 33, 0.5);
   position: relative;
   margin-top: 0;
   z-index: 1;
@@ -1370,7 +1370,7 @@ div.chatbot-bubble {
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid #333;
-  background: #212121;
+  background: rgba(33, 33, 33, 0.5);
   position: relative;
   margin-top: 0;
   z-index: 1;
