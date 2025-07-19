@@ -189,10 +189,25 @@ export default function Chatbot() {
             const itemNames = cart.items.map(item => item.product_title);
             const itemUrls = cart.items.map(item => item.url);
             const itemQuantities = cart.items.map(item => item.quantity);
-            const numberedItems = itemNames.map((item, index) => `${index + 1}. [${item}](${itemUrls[index]}) (Qty: ${itemQuantities[index]})`).join('\n');
+            const itemVariants = cart.items.map(item => {
+              // Get variant options (color, size, ML, etc.)
+              const variantOptions = item.variant_options || [];
+              const variantText = variantOptions.length > 0 
+                ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+                : '';
+              return variantText;
+            });
+            
+            const numberedItems = itemNames.map((item, index) => {
+              const variantInfo = itemVariants[index];
+              return `${index + 1}. [${item}](${itemUrls[index]}) (Qty: ${itemQuantities[index]}${variantInfo})`;
+            }).join('\n');
             
             // Create WhatsApp and Instagram messages with cart items
-            const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
+            const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
+              const variantInfo = itemVariants[index];
+              return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
+            }).join('\n')}\n\nCan you help me with these products?`;
             const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
             const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
             
@@ -607,7 +622,17 @@ export default function Chatbot() {
         const cartItems = lastBotMessage.cartItems || [];
         const itemNames = cartItems.map(item => item.product_title);
         const itemQuantities = cartItems.map(item => item.quantity);
-        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
+        const itemVariants = cartItems.map(item => {
+          const variantOptions = item.variant_options || [];
+          const variantText = variantOptions.length > 0 
+            ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+            : '';
+          return variantText;
+        });
+        const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
+          const variantInfo = itemVariants[index];
+          return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
+        }).join('\n')}\n\nCan you help me with these products?`;
         connectToWhatsApp(whatsappMessage);
         answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
       }
@@ -621,7 +646,17 @@ export default function Chatbot() {
         const cartItems = lastBotMessage.cartItems || [];
         const itemNames = cartItems.map(item => item.product_title);
         const itemQuantities = cartItems.map(item => item.quantity);
-        const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
+        const itemVariants = cartItems.map(item => {
+          const variantOptions = item.variant_options || [];
+          const variantText = variantOptions.length > 0 
+            ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+            : '';
+          return variantText;
+        });
+        const instagramMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
+          const variantInfo = itemVariants[index];
+          return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
+        }).join('\n')}\n\nCan you help me with these products?`;
         connectToInstagram(instagramMessage);
         answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
       }
@@ -641,7 +676,17 @@ export default function Chatbot() {
       const cartItems = lastBotMessage.cartItems || [];
       const itemNames = cartItems.map(item => item.product_title);
       const itemQuantities = cartItems.map(item => item.quantity);
-      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item} (Qty: ${itemQuantities[index]})`).join('\n')}\n\nCan you help me with these products?`;
+      const itemVariants = cartItems.map(item => {
+        const variantOptions = item.variant_options || [];
+        const variantText = variantOptions.length > 0 
+          ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+          : '';
+        return variantText;
+      });
+      const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
+        const variantInfo = itemVariants[index];
+        return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
+      }).join('\n')}\n\nCan you help me with these products?`;
       connectToWhatsApp(whatsappMessage);
       
       answer = "I've opened WhatsApp for you with your cart items! You can also reach us on Instagram DM if you prefer. 📱📸";
