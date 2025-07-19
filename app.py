@@ -14,6 +14,7 @@ import difflib
 import pytz
 from datetime import datetime, timedelta
 import time
+import json
 
 import re
 from datetime import datetime, timezone
@@ -113,6 +114,40 @@ def log_request(response):
 def handle_exception(e):
     logger.exception("Unhandled exception: %s", e)
     return jsonify({"error": "Internal server error"}), 500
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CSV Logging
+# ──────────────────────────────────────────────────────────────────────────────
+def log_chat_to_csv(chat_id, session_id, message_type, message_text, timestamp, user_info=None):
+    """Log chat messages to CSV file for analysis"""
+    csv_file = "chat_logs.csv"
+    file_exists = os.path.exists(csv_file)
+    
+    try:
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            
+            # Write header if file doesn't exist
+            if not file_exists:
+                writer.writerow([
+                    'chat_id', 'session_id', 'message_type', 'message_text', 
+                    'timestamp', 'user_agent', 'ip_address', 'user_info'
+                ])
+            
+            # Write message data
+            writer.writerow([
+                chat_id,
+                session_id,
+                message_type,  # 'user' or 'bot'
+                message_text,
+                timestamp,
+                request.headers.get('User-Agent', ''),
+                request.remote_addr,
+                json.dumps(user_info) if user_info else ''
+            ])
+            
+    except Exception as e:
+        logger.error(f"Failed to log chat to CSV: {e}")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -622,6 +657,13 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
         user_ip = request.remote_addr
         user_info = {}
         
+        # Generate chat ID for CSV logging
+        chat_id = data.get("chatId", str(uuid.uuid4()))
+        timestamp = datetime.now().isoformat()
+        
+        # Log user message to CSV
+        log_chat_to_csv(chat_id, session_id, "user", user_q, timestamp, user_info)
+        
         # Brand match logic
         if brand_match:
             logger.info(f"Brand match found: {brand_match} for query: {user_q}")
@@ -739,6 +781,9 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
                 answer = "I am assisting customers at the moment, please come back in a few minutes."
             else:
                 answer = "Sorry, something went wrong. Please try again later."
+        
+        # Log bot response to CSV
+        log_chat_to_csv(chat_id, session_id, "bot", answer, timestamp, user_info)
 
         # 13) Persist last_results & log
         last_results[session_id] = results

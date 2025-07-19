@@ -192,6 +192,17 @@ export default function Chatbot() {
     localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
   }, [conversationHistory]);
 
+  // Set initial welcome message if no messages exist
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        type: 'bot',
+        text: getRandomWelcomeMessage(),
+        time: timeStamp()
+      }]);
+    }
+  }, []);
+
   useEffect(() => {
     if (!minimized) {
       fetch('/cart.js')
@@ -285,10 +296,28 @@ export default function Chatbot() {
 
   const timeStamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // On new chat, if no name is stored, have the bot send the name prompt as the first message
-  // Remove the useEffect that prompts for the user's name
-
-  // Remove the useEffect that stores the user's name
+  // Function to get random welcome message
+  const getRandomWelcomeMessage = () => {
+    const welcomeMessages = [
+      "Hello! I am your MamaTega Assistant. How can I help you today?",
+      "Welcome to MamaTega! I am here to assist you with all your beauty needs.",
+      "Hi there! I am your MamaTega beauty consultant. What can I help you with?",
+      "Greetings! I am your MamaTega Assistant ready to help you find the perfect products.",
+      "Welcome! I am your MamaTega beauty expert. How may I assist you today?",
+      "Hello beautiful! I am your MamaTega Assistant. What brings you here today?",
+      "Hi! I am your MamaTega beauty guide. How can I make your day more beautiful?",
+      "Welcome to MamaTega Cosmetics! I am here to help you discover amazing products.",
+      "Hello! I am your MamaTega beauty advisor. What would you like to explore today?",
+      "Hi there! I am your MamaTega Assistant. Ready to help you find your perfect beauty routine.",
+      "Welcome! I am your MamaTega beauty specialist. How can I assist you today?",
+      "Hello! I am your MamaTega beauty consultant. What can I help you discover?",
+      "Hi! I am your MamaTega Assistant. Let us find the perfect products for you.",
+      "Welcome to MamaTega! I am your beauty expert. How may I help you today?",
+      "Hello! I am your MamaTega beauty guide. What brings you to our store today?"
+    ];
+    
+    return welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+  };
 
   const handleKey = e => e.key === 'Enter' && sendMessage();
 
@@ -307,7 +336,7 @@ export default function Chatbot() {
     setSessionId(null);
     setMessages([{
       type: 'bot',
-      text: "I'm your MamaTega Assistant. How can I help you today?",
+      text: getRandomWelcomeMessage(),
       time: timeStamp()
     }]);
     setSuggestions(getRandomSuggestions());
@@ -555,11 +584,15 @@ export default function Chatbot() {
       content: msg.text
     }));
 
+    // Generate chat ID for this conversation
+    const chatId = sessionId || `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     try {
       const res = await axios.post(API_URL, {
         prompt,
         history,
         nameAskedBefore,
+        chatId,
         ...(sessionId && { sessionId }),
       });
       const data = res.data;
