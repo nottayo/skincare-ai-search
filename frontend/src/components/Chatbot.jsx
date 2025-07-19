@@ -245,7 +245,7 @@ export default function Chatbot() {
               return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
             }).join('\n')}\n\nCan you help me with these products?`;
             const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-            const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
+            const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
             
             // Array of varied cart messages with links and both WhatsApp & Instagram options
             const cartMessages = [
@@ -816,7 +816,7 @@ export default function Chatbot() {
         <>
           {bubbleVisible && (
             <div className={`chatbot-bubble ${isExciting ? 'exciting' : ''}`} onClick={() => setMinimized(false)}>
-              <span className="bubble-icon" role="img" aria-label="shopping bag">🧓🏾</span>
+              <span className="bubble-icon" role="img" aria-label="shopping bag">👩🏾</span>
               <span className="bubble-text">{bubbleText}</span>
             </div>
           )}
