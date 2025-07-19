@@ -168,6 +168,25 @@ export default function Chatbot() {
     };
   }, [showConversationMenu]);
 
+  // Minimize chat widget when clicking outside (only when chat is open)
+  useEffect(() => {
+    const handleClickOutsideToMinimize = (event) => {
+      if (!minimized && chatWidgetRef.current && !chatWidgetRef.current.contains(event.target)) {
+        setMinimized(true);
+        setBubbleVisible(true);
+        setShowConversationMenu(false);
+      }
+    };
+
+    if (!minimized) {
+      document.addEventListener('mousedown', handleClickOutsideToMinimize);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideToMinimize);
+    };
+  }, [minimized]);
+
   // Save conversationHistory to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
