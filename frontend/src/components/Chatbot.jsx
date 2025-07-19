@@ -79,6 +79,8 @@ export default function Chatbot() {
   const [nameAskedBefore, setNameAskedBefore] = useState(() => {
     return localStorage.getItem('name_asked_before') === 'true';
   });
+  const [bubbleText, setBubbleText] = useState('Ask MamaTega');
+  const [cartTimeout, setCartTimeout] = useState(null);
   // Keep isDark in sync with <body> class
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -170,6 +172,10 @@ export default function Chatbot() {
           const itemIds = (cart.items || []).map(item => item.id).sort();
           const lastCartIds = JSON.parse(localStorage.getItem('last_cart_ids') || '[]');
           const isNewCart = JSON.stringify(itemIds) !== JSON.stringify(lastCartIds);
+          
+          // Update bubble text based on cart activity
+          updateBubbleText(cart.items || []);
+          
           if (cart.items && cart.items.length > 0 && isNewCart) {
             const itemNames = cart.items.map(item => item.product_title);
             const itemUrls = cart.items.map(item => item.url);
@@ -178,7 +184,7 @@ export default function Chatbot() {
             // Create WhatsApp and Instagram messages with cart items
             const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => `${index + 1}. ${item}`).join('\n')}\n\nCan you help me with these products?`;
             const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-            const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
+            const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
             
             // Array of varied cart messages with links and both WhatsApp & Instagram options
             const cartMessages = [
@@ -279,8 +285,33 @@ export default function Chatbot() {
     const defaultMessage = 'Hi MamaTega! I need help with my order.';
     const instagramMessage = message || defaultMessage;
     // Instagram DM URL format: https://www.instagram.com/direct/t/username/
-    const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
+    const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
     window.open(instagramLink, '_blank');
+  };
+
+  // Function to update bubble text based on cart activity
+  const updateBubbleText = (cartItems) => {
+    if (cartItems.length === 0) {
+      setBubbleText('Ask MamaTega');
+      return;
+    }
+    
+    if (cartItems.length === 1) {
+      setBubbleText('Ready to Order');
+    } else {
+      setBubbleText('Great Taste!');
+    }
+    
+    // Reset timeout for 3 minutes
+    if (cartTimeout) {
+      clearTimeout(cartTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      setBubbleText('Ask MamaTega');
+    }, 3 * 60 * 1000); // 3 minutes
+    
+    setCartTimeout(timeout);
   };
 
   // Function to handle shopping completion flow
@@ -297,7 +328,7 @@ export default function Chatbot() {
         
         const whatsappMessage = `Hi MamaTega! I'd like to complete my order:\n\n${itemDetails}\n\nTotal: $${totalPrice}\n\nCan you help me process this order?`;
         const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-        const instagramLink = `https://www.instagram.com/direct/t/mamatega_cosmetics/`;
+        const instagramLink = `https://www.instagram.com/direct/t/mamategacosmeticsandspa/`;
         
         const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
         
@@ -316,7 +347,7 @@ export default function Chatbot() {
       })
       .catch(() => {
         // Fallback if cart fetch fails
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamatega_cosmetics/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/direct/t/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\nClick any link above to proceed!`;
         
         setMessages(m => [
           ...m,
@@ -410,8 +441,37 @@ export default function Chatbot() {
       answer = null;
     }
 
-    // Check if user wants to connect to WhatsApp or Instagram (after getting response)
+    // Check if answer indicates product availability issues or API limits
+    const lowerAnswer = answer ? answer.toLowerCase() : '';
     const lowerPrompt = prompt.toLowerCase();
+    
+    // Keywords that indicate product availability issues or API limits
+    const availabilityKeywords = [
+      'don\'t have', 'don\'t carry', 'not available', 'out of stock', 'currently unavailable',
+      'not in our inventory', 'don\'t stock', 'unfortunately we don\'t', 'we don\'t have',
+      'not available in our store', 'don\'t have this brand', 'don\'t carry this brand'
+    ];
+    
+    const apiLimitKeywords = [
+      'rate limit', 'api limit', 'temporarily unavailable', 'service temporarily',
+      'unable to process', 'cannot confirm', 'can\'t confirm', 'unable to check',
+      'service error', 'temporarily down', 'busy at the moment'
+    ];
+    
+    const needsWhatsApp = availabilityKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
+                         apiLimitKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
+                         !answer; // No answer means API error
+    
+    if (needsWhatsApp) {
+      // Create WhatsApp message with user's question
+      const whatsappMessage = `Hi MamaTega! I have a question about: ${prompt}\n\nCan you help me with this?`;
+      const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
+      
+      // Replace or append WhatsApp fallback message
+      answer = `I'm having trouble checking that for you right now. Let me connect you directly with our team who can help you better!\n\n[Click here to chat on WhatsApp](${whatsappLink})`;
+    }
+
+    // Check if user wants to connect to WhatsApp or Instagram (after getting response)
     const whatsappKeywords = ['whatsapp', 'whats app', 'wa'];
     const instagramKeywords = ['instagram', 'insta', 'ig', 'dm'];
     const generalContactKeywords = ['connect', 'message', 'chat', 'contact', 'help'];
@@ -522,7 +582,7 @@ export default function Chatbot() {
           {bubbleVisible && (
             <div className="chatbot-bubble" onClick={() => setMinimized(false)}>
               <span className="bubble-icon" role="img" aria-label="shopping bag">🧓🏾</span>
-              <span className="bubble-text">Ask MamaTega</span>
+              <span className="bubble-text">{bubbleText}</span>
             </div>
           )}
         </>
