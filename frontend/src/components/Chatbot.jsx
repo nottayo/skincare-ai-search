@@ -222,11 +222,15 @@ export default function Chatbot() {
             const itemVariants = cart.items.map(item => {
               // Get variant options (color, size, ML, etc.)
               const variantOptions = item.variant_options || [];
+              console.log('Variant options for item:', item.product_title, variantOptions);
+              
               const validVariants = variantOptions.filter(option => 
                 option && option.name && option.value && 
                 option.name !== 'undefined' && option.value !== 'undefined' &&
                 option.name.trim() !== '' && option.value.trim() !== ''
               );
+              
+              console.log('Valid variants for item:', item.product_title, validVariants);
               
               const variantText = validVariants.length > 0 
                 ? ` - ${validVariants.map(option => `${option.name}: ${option.value}`).join(', ')}`
