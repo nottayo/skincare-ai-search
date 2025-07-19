@@ -1,3 +1,9 @@
 chat_id,session_id,message_type,message_text,timestamp,user_agent,ip_address,user_info
 chat_1752892213776_fc3dw4g1c,,user,hmm,2025-07-18T22:30:16.523513,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
 chat_1752892213776_fc3dw4g1c,,bot,"Hey! If you have any questions or need help finding something at MamaTega, feel free to ask!",2025-07-18T22:30:16.523513,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892228786_d1fqjm6lw,,user,i need olay,2025-07-18T22:30:29.868541,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892228786_d1fqjm6lw,,bot,Olay is one of the brands we carry at MamaTega!,2025-07-18T22:30:29.868541,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892270497_7ulpqtqct,,user,what tpe of products do you have?,2025-07-18T22:31:11.443841,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892270497_7ulpqtqct,,bot,"At MamaTega, we carry a variety of products, including Olay.",2025-07-18T22:31:11.443841,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892305657_4d291xs5w,,user,like what mention them,2025-07-18T22:31:46.778871,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,
+chat_1752892305657_4d291xs5w,,bot,Olay,2025-07-18T22:31:46.778871,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",127.0.0.1,

@@ -485,55 +485,33 @@ def ask():
         # 1. Build a rich system prompt with store info and product catalog summary
         # 1. Update the system prompt:
         store_info = f"""
-IMPORTANT RULES (ALWAYS FOLLOW):
+You are the MamaTega Assistant for MamaTega Cosmetics. Be warm, friendly, and conversational.
+
+IMPORTANT RULES:
 - Never show phone numbers, WhatsApp, or Instagram unless the user explicitly asks for contact info.
 - Never generate clickable links for products or contact info. Only mention product titles.
-- Never use bulleted lists or numbered lists for product recommendations—use paragraphs or line breaks ONLY. Do NOT use numbers (1., 2., 3.) or bullets (-, •, etc.) for any product list, even if the user asks for 'top' or 'best' products.
-- NEVER greet the user (e.g., 'Hi', 'Hello', 'Hey') except on the VERY FIRST message of a new conversation. Do NOT greet in every reply.
-- Do not repeat the brand name (e.g., 'MamaTega') before every product if it is already clear from context.
+- Never use bulleted lists or numbered lists for product recommendations—use paragraphs or line breaks ONLY.
+- NEVER greet the user except on the VERY FIRST message of a new conversation.
 - Do not repeat contact info in every answer; only provide it if the user explicitly asks.
 
 CONVERSATION HANDLING:
-- For casual greetings like "hi", "hello", "hey", "you good?", "how are you" - respond naturally with a warm greeting and ask how you can help with skincare or beauty products.
+- For casual greetings like "hi", "hello", "hey" - respond naturally and ask how you can help with skincare or beauty products.
 - For casual responses like "okay", "thanks", "alright" - acknowledge warmly and ask if they need help with anything specific.
 - For names or simple responses like "Tayo", "John", "yes", "no" - respond naturally without searching for products.
-- For vague requests like "I need something" or "help me" - take charge by asking clarifying questions about their skin concerns, preferences, or what they're looking for.
+- For vague requests like "I need something" or "help me" - ask clarifying questions about their skin concerns or what they're looking for.
 - Only search for products when the user provides specific details about what they want.
 - For general conversation, be friendly and helpful without forcing product recommendations.
-- NEVER say "sorting through product list" or similar phrases unless the user specifically asks for product recommendations.
-- For casual conversation, respond naturally without mentioning products or searching.
-- ALWAYS ask follow-up questions when the user's request is unclear or vague.
 - NEVER search products for simple acknowledgments, names, or basic responses.
-- NEVER ask for names in response to casual greetings - only ask once at the very beginning of a new conversation.
 
 NAME HANDLING:
-- If the user provides their name (like "Tayo"), remember it and use it in future responses.
-- NEVER ask "What may I call you?" if you already know their name from the conversation.
-- If you know their name, greet them by name (e.g., "Hi Tayo!") and ask how you can help.
+- If the user provides their name, remember it and use it in future responses.
 - Only ask for their name ONCE at the very beginning of a brand new conversation.
-- For casual greetings like "Hey", "Hi", "Hello" - respond naturally without asking for their name.
-- If the conversation has already started, do NOT ask for their name again.
 
-LANGUAGE HANDLING:
-- Detect the language the user is speaking and respond in the same language.
-- If user says "bonjour", "salut", "bonsoir" - respond in French.
-- If user says "hola", "buenos días", "buenas tardes" - respond in Spanish.
-- If user says "ciao", "buongiorno", "buonasera" - respond in Italian.
-- If user says "hallo", "guten tag", "guten abend" - respond in German.
-- If user says "olá", "bom dia", "boa tarde" - respond in Portuguese.
-- If user says "привет", "здравствуйте", "добрый день" - respond in Russian.
-- If user says "مرحبا", "أهلا", "صباح الخير" - respond in Arabic.
-- If user says "こんにちは", "おはよう", "こんばんは" - respond in Japanese.
-- If user says "안녕하세요", "안녕", "좋은 아침" - respond in Korean.
-- If user says "你好", "早上好", "晚上好" - respond in Chinese.
-- Always maintain the same language throughout the conversation unless the user switches languages.
-
-You are the MamaTega Assistant for MamaTega Cosmetics.
 Store Details:
 - Location: Tejuosho Ultra Modern Shopping Centre, Mosque Plaza, Yaba, Lagos
 - Store Hours: Mon–Sat 8AM–8PM, Sun 1PM–7PM
 
-Always answer clearly and kindly. If asked about shipping, how to order, ingredients, or hours — respond based on the store info. If the user asks for recommendations, list up to 3 relevant products if found. Only mention product titles (never links). If you know the user's name, always greet them by name in your first reply after they provide it (e.g., 'Hi Tayo!'), and vary your greetings and follow-ups every time. Do not repeat the same greeting or opening message. Be creative and warm in your greetings and follow-ups, and avoid generic or repetitive responses.
+Always answer clearly and kindly. If asked about shipping, how to order, ingredients, or hours — respond based on the store info. If the user asks for recommendations, list up to 3 relevant products if found. Only mention product titles (never links).
 """
         # Optionally, you can add a summary of the product catalog here if you want the AI to reference it directly.
 
@@ -686,9 +664,9 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
                 injection = {
                     "role": "system",
                     "content": (
-                        f"For the user's request, you have these {brand_match.title()} products available (separate each product with a line break, but do NOT use numbers or bullets):\n"
+                        f"For the user's request, you have these {brand_match.title()} products available:\n"
                         f"{product_lines}\n"
-                        "Recommend these products in a warm, story-like, conversational way. Weave the product names and descriptions naturally into your response, as if you are a friendly shop assistant sharing a story or personal experience. Do NOT use numbers or bullets in your reply. Do not include images."
+                        "Recommend these products in a warm, conversational way. Mention the product names naturally in your response. Do NOT use numbers or bullets in your reply."
                     )
                 }
                 history.insert(1, injection)
@@ -743,11 +721,11 @@ Always answer clearly and kindly. If asked about shipping, how to order, ingredi
                     if is_best_product_query(user_q):
                         results = [{"title": strip_brand(p["title"]), "link": f"https://{SHOPIFY_DOMAIN}/products/{p['handle']}"} for p in results]
                         product_lines = "\n".join(f"{r['title']}" for r in results)
-                        injection = {"role": "system", "content": ("For the user's request, you have these products available (separate each product with a line break, but do NOT use numbers or bullets):\n" f"{product_lines}\n" "Recommend these products in a warm, story-like, conversational way. Only mention the product names as clickable links. Do not include descriptions unless the user specifically asks for details. Do NOT use numbers or bullets in your reply.")}
+                        injection = {"role": "system", "content": ("For the user's request, you have these products available:\n" f"{product_lines}\n" "Recommend these products in a warm, conversational way. Mention the product names naturally in your response. Do NOT use numbers or bullets in your reply.")}
                     else:
                         results = [{"title": strip_brand(p["title"]), "link": f"https://{SHOPIFY_DOMAIN}/products/{p['handle']}"} for p in results]
                         product_lines = "\n".join(f"{strip_brand(r['title'])}: {r.get('description', '')} (https://{SHOPIFY_DOMAIN}/products/{r['handle']})".strip() for r in results)
-                        injection = {"role": "system", "content": ("For the user's request, you have these products available (separate each product with a line break, but do NOT use numbers or bullets):\n" f"{product_lines}\n" "Recommend these products in a warm, story-like, conversational way. Weave the product names and descriptions naturally into your response, as if you are a friendly shop assistant sharing a story or personal experience. Do NOT use numbers or bullets in your reply. Do not include images.")}
+                        injection = {"role": "system", "content": ("For the user's request, you have these products available:\n" f"{product_lines}\n" "Recommend these products in a warm, conversational way. Mention the product names naturally in your response. Do NOT use numbers or bullets in your reply.")}
                     history.insert(1, injection)
                 else:
                     answer = "Sorry, I couldn't find any products for that. Could you try a different term or be more specific? If I can't answer your question, you can reach out to us via WhatsApp after a few minutes of waiting."
