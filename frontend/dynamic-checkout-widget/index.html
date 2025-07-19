@@ -117,8 +117,8 @@
                         // Use existing cart URL
                         window.open(this.cartUrl, '_blank');
                     } else {
-                        // Fallback - open a default cart page
-                        window.open('https://skincare-ai-backend.onrender.com/cart/new', '_blank');
+                        // Fallback - open your Shopify cart page
+                        window.open('https://shopmamatega.com/pages/add-to-cart', '_blank');
                     }
                 });
                 
@@ -234,18 +234,18 @@
                     if (response.ok) {
                         const cartData = await response.json();
                         console.log('Cart creation response:', cartData);
-                        this.cartUrl = `https://skincare-ai-backend.onrender.com/cart/${cartData.cart_id}`;
+                        this.cartUrl = `https://shopmamatega.com/pages/add-to-cart?cart_id=${cartData.cart_id}`;
                         console.log('Cart page created:', this.cartUrl);
                     } else {
                         const errorText = await response.text();
                         console.error('Failed to create cart page:', response.status, errorText);
                         // Fallback URL
-                        this.cartUrl = 'https://skincare-ai-backend.onrender.com/cart/new';
+                        this.cartUrl = 'https://shopmamatega.com/pages/add-to-cart';
                     }
                 } catch (error) {
                     console.error('Error creating cart page:', error);
                     // Fallback URL
-                    this.cartUrl = 'https://skincare-ai-backend.onrender.com/cart/new';
+                    this.cartUrl = 'https://shopmamatega.com/pages/add-to-cart';
                 }
             }
         }
