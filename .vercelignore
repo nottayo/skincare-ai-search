@@ -1,7 +1,7 @@
-# Ignore ALL Python files and backend folder
+# Ignore ALL Python files and dependencies
 *.py
 requirements.txt
-backend/
+backend-temp/
 venv/
 .venv/
 __pycache__/
@@ -9,8 +9,9 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Ignore node_modules Python files
+# Ignore ALL node_modules Python files
 node_modules/**/*.py
+frontend/node_modules/**/*.py
 
 # Keep only the essential files for Vercel
 !frontend/**
