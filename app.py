@@ -142,7 +142,11 @@ behavior_rules = load_behavior_rules(BEHAVIOR_RULES_PATH)
 # Flask app setup
 # ──────────────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-CORS(app, resources={r"/ask": {"origins": "*"}})
+CORS(app, resources={
+    r"/ask": {"origins": "*"},
+    r"/api/cart/*": {"origins": "*"},
+    r"/cart-button": {"origins": "*"}
+})
 
 @app.before_request
 def start_timer():
@@ -1017,6 +1021,14 @@ def list_models():
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend/search-widget', 'index.html')
+
+@app.route('/cart-button')
+def serve_cart_button():
+    return send_from_directory('frontend/dynamic-checkout-widget', 'index.html')
+
+@app.route('/cart-button/<path:path>')
+def serve_cart_button_static(path):
+    return send_from_directory('frontend/dynamic-checkout-widget', path)
 
 @app.route('/<path:path>')
 def serve_static(path):
