@@ -568,6 +568,7 @@
   font-size: 9px; /* smaller timestamp */
   color: #aaa;
   margin-top: 1px; /* less space above timestamp */
+  margin-right: -30px;
   text-align: right;
 }
 .chat-message.user .timestamp {
