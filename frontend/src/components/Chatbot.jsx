@@ -223,7 +223,13 @@ export default function Chatbot() {
               // Get variant options (color, size, ML, etc.)
               const variantOptions = item.variant_options || [];
               const variantText = variantOptions.length > 0 
-                ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+                ? ` - ${variantOptions.map(option => {
+                    // Check if option has valid name and value
+                    if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
+                      return `${option.name}: ${option.value}`;
+                    }
+                    return null;
+                  }).filter(Boolean).join(', ')}`
                 : '';
               return variantText;
             });
@@ -546,7 +552,7 @@ export default function Chatbot() {
     const waitingTimeout = setTimeout(() => {
       setMessages(m => [
         ...m.filter(msg => !msg.waiting),
-        { type: 'bot', text: "Just a minute, hang in there—I'm sorting through my product list for you!", time: timeStamp(), waiting: true }
+        { type: 'bot', text: "Just a minute, hang in there!", time: timeStamp(), waiting: true }
       ]);
       // Start WhatsApp fallback timer (5 minutes = 300,000 ms)
       const waTimeout = setTimeout(() => {
@@ -677,7 +683,13 @@ export default function Chatbot() {
         const itemVariants = cartItems.map(item => {
           const variantOptions = item.variant_options || [];
           const variantText = variantOptions.length > 0 
-            ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+            ? ` - ${variantOptions.map(option => {
+                // Check if option has valid name and value
+                if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
+                  return `${option.name}: ${option.value}`;
+                }
+                return null;
+              }).filter(Boolean).join(', ')}`
             : '';
           return variantText;
         });
@@ -701,7 +713,13 @@ export default function Chatbot() {
         const itemVariants = cartItems.map(item => {
           const variantOptions = item.variant_options || [];
           const variantText = variantOptions.length > 0 
-            ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+            ? ` - ${variantOptions.map(option => {
+                // Check if option has valid name and value
+                if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
+                  return `${option.name}: ${option.value}`;
+                }
+                return null;
+              }).filter(Boolean).join(', ')}`
             : '';
           return variantText;
         });
@@ -731,7 +749,13 @@ export default function Chatbot() {
       const itemVariants = cartItems.map(item => {
         const variantOptions = item.variant_options || [];
         const variantText = variantOptions.length > 0 
-          ? ` - ${variantOptions.map(option => `${option.name}: ${option.value}`).join(', ')}`
+          ? ` - ${variantOptions.map(option => {
+              // Check if option has valid name and value
+              if (option && option.name && option.value && option.name !== 'undefined' && option.value !== 'undefined') {
+                return `${option.name}: ${option.value}`;
+              }
+              return null;
+            }).filter(Boolean).join(', ')}`
           : '';
         return variantText;
       });
