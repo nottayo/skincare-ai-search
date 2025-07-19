@@ -283,6 +283,21 @@ export default function Chatbot() {
     window.open(instagramLink, '_blank');
   };
 
+  // Function to handle shopping completion flow
+  const handleShoppingComplete = () => {
+    const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **Visit Store** - Come shop directly at our location\n📱 **WhatsApp** - Order via WhatsApp with payment\n📸 **Instagram** - Order via Instagram DM\n\n*Store Hours: Monday - Saturday, 9:00 AM - 7:00 PM*\n\nWhich option works best for you?`;
+    
+    setMessages(m => [
+      ...m,
+      {
+        type: 'bot',
+        text: orderOptions,
+        time: timeStamp(),
+        isOrderOptions: true
+      }
+    ]);
+  };
+
   const sendMessage = async (preset) => {
     const prompt = (preset !== undefined ? preset : input).trim();
     if (!prompt) return;
@@ -368,16 +383,25 @@ export default function Chatbot() {
     const whatsappKeywords = ['whatsapp', 'whats app', 'wa'];
     const instagramKeywords = ['instagram', 'insta', 'ig', 'dm'];
     const generalContactKeywords = ['connect', 'message', 'chat', 'contact', 'help'];
+    const shoppingCompleteKeywords = ['ready', 'done', 'complete', 'finish', 'order', 'buy', 'purchase', 'checkout'];
+    const storeVisitKeywords = ['store', 'visit', 'come', 'location', 'address'];
     
     const isWhatsAppRequest = whatsappKeywords.some(keyword => lowerPrompt.includes(keyword));
     const isInstagramRequest = instagramKeywords.some(keyword => lowerPrompt.includes(keyword));
     const isGeneralContactRequest = generalContactKeywords.some(keyword => lowerPrompt.includes(keyword));
+    const isShoppingCompleteRequest = shoppingCompleteKeywords.some(keyword => lowerPrompt.includes(keyword));
+    const isStoreVisitRequest = storeVisitKeywords.some(keyword => lowerPrompt.includes(keyword));
     
-    // Check if this is a response to a cart message
+    // Check if this is a response to a cart message or order options
     const lastBotMessage = messages.filter(m => m.type === 'bot').pop();
     const isCartResponse = lastBotMessage && lastBotMessage.isCartMessage;
+    const isOrderOptionsResponse = lastBotMessage && lastBotMessage.isOrderOptions;
     
-    if (isWhatsAppRequest && isCartResponse) {
+    if (isShoppingCompleteRequest) {
+      // User is ready to complete shopping - show order options
+      handleShoppingComplete();
+      answer = null; // Don't send AI response, use the order options message
+    } else if (isWhatsAppRequest && (isCartResponse || isOrderOptionsResponse)) {
       // Get cart items for WhatsApp message
       const cartItems = lastBotMessage.cartItems || [];
       const itemNames = cartItems.map(item => item.product_title);
@@ -386,7 +410,7 @@ export default function Chatbot() {
       
       // Add a confirmation message
       answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
-    } else if (isInstagramRequest && isCartResponse) {
+    } else if (isInstagramRequest && (isCartResponse || isOrderOptionsResponse)) {
       // Get cart items for Instagram message
       const cartItems = lastBotMessage.cartItems || [];
       const itemNames = cartItems.map(item => item.product_title);
@@ -395,6 +419,9 @@ export default function Chatbot() {
       
       // Add a confirmation message
       answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
+    } else if (isStoreVisitRequest && isOrderOptionsResponse) {
+      // User wants to visit store
+      answer = "Great choice! Here's our store information:\n\n📍 **MamaTega Cosmetics Store**\n🕒 **Hours:** Monday - Saturday, 9:00 AM - 7:00 PM\n📞 **Phone:** +234 818 988 0899\n\nWe'd love to see you in person! Our team will be happy to help you with your selections and provide personalized recommendations. 🛍️";
     } else if (isWhatsAppRequest) {
       // General WhatsApp request
       connectToWhatsApp();
@@ -464,7 +491,10 @@ export default function Chatbot() {
           <div className="chat-header">
             <div className="header-content">
               <div className="header-top">
-                <span className="brand-name">MamaTega Cosmetics</span>
+                <div className="brand-info">
+                  <span className="brand-name">MamaTega Cosmetics</span>
+                  <span className="store-hours">🕒 Mon - Sat, 9:00 AM - 7:00 PM</span>
+                </div>
                 {/* Removed dark/light mode toggle button */}
                 <button className="close-btn" onClick={handleCloseWidget}>&times;</button>
               </div>
