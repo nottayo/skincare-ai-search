@@ -1081,23 +1081,7 @@ div.chatbot-bubble {
   transform: none !important;
 }
 
-/* Remove sliding rectangle effect */
-/*
-.chatbot-bubble::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.8s;
-}
-
-.chatbot-bubble:hover::before {
-  left: 100%;
-}
-*/
+/* Removed sliding highlight effect from chat bubble */
 
 @keyframes bubbleGlow {
   0% {
