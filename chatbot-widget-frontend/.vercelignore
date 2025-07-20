@@ -1,0 +1,31 @@
+# dependency folders
+node_modules
+
+# framework build outputs created locally
+dist
+dist-widget
+.next
+out
+build
+
+# misc
+.DS_Store
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fonts (these are large and not needed for build)
+Fonts/
+
+# Git
+.git
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db 
