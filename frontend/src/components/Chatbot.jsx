@@ -693,7 +693,7 @@ export default function Chatbot() {
   const updateExistingCartMessage = async (cartItems, newItems = []) => {
     try {
       // Create or update cart page
-      const response = await fetch('https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create', {
+      const response = await fetch('https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/api/cart/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -976,8 +976,8 @@ export default function Chatbot() {
     const start = Date.now();
     let answer = '', results = [], view_all_link = '', newSugs = [], whatsappUrl = '';
 
-    // Determine backend API URL based on environment
-    const API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/ask';
+    // Set API_URL to Vercel backend
+    const API_URL = 'https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/ask';
 
     const history = messages.slice(-15).map(msg => ({
       role: msg.type === 'user' ? 'user' : 'assistant',

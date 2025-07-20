@@ -74,8 +74,8 @@ const DynamicCheckout = () => {
     
     setIsLoading(true);
     try {
-      // Replace all API_URL logic with hardcoded Vercel backend URL
-      const CART_API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create';
+      // Set CART_API_URL to Vercel backend
+      const CART_API_URL = 'https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/api/cart/create';
       
       // Get existing cart ID from localStorage
       const existingCartId = localStorage.getItem('mamatega_cart_id');
@@ -101,7 +101,7 @@ const DynamicCheckout = () => {
         const cartData = await response.json();
         setCartId(cartData.cart_id);
         // When setting cartUrl, use the Vercel backend URL
-        const fullCartUrl = `https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/cart/${cartData.cart_id}`;
+        const fullCartUrl = `https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/cart/${cartData.cart_id}`;
         setCartUrl(fullCartUrl);
         
         // Store cart ID in localStorage for persistence
