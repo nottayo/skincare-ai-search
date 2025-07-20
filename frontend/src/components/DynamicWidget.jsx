@@ -159,6 +159,8 @@ const DynamicWidget = ({ onCartUpdate }) => {
     }
   };
 
+  const SHOPIFY_CART_PAGE = 'https://shopmamatega.com/pages/add-to-cart';
+
   // Don't render if no items in cart
   if (cartItems.length === 0) {
     return null;
@@ -209,7 +211,7 @@ const DynamicWidget = ({ onCartUpdate }) => {
       <div className="dynamic-widget-actions">
         <button 
           className="dynamic-widget-btn dynamic-widget-btn-primary"
-          onClick={() => window.open(`/cart/${cartId}`, '_blank')}
+          onClick={() => window.open(SHOPIFY_CART_PAGE, '_blank')}
         >
           View Full Cart
         </button>
