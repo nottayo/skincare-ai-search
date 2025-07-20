@@ -116,14 +116,10 @@ const DynamicCheckout = () => {
     }
   };
 
+  const SHOPIFY_CART_PAGE = 'https://shopmamatega.com/pages/add-to-cart';
+
   const handleCheckoutClick = () => {
-    if (cartUrl) {
-      // Open cart page in new tab
-      window.open(cartUrl, '_blank');
-    } else if (cartItems.length > 0) {
-      // If no cart URL but items exist, create cart first
-      createOrUpdateCartPage(cartItems);
-    }
+    window.open(SHOPIFY_CART_PAGE, '_blank');
   };
 
   const copyCartLink = async () => {
@@ -172,32 +168,14 @@ const DynamicCheckout = () => {
       <button 
         className="dynamic-checkout-btn"
         onClick={handleCheckoutClick}
-        disabled={isLoading}
-        title={cartUrl ? `Click to view cart page (Expires in: ${timeRemaining || 'Unknown'})` : 'Add items to cart first'}
+        disabled={false}
+        title="Go to Shopify Add to Cart page"
       >
-        {isLoading ? (
-          <span className="loading-spinner">⏳</span>
-        ) : (
-          <>
-            <span className="checkout-icon">🛒</span>
-                      <span className="checkout-text">
-            {getTotalItems()} items
-            {timeRemaining && timeRemaining !== 'Expired' && (
-              <span style={{ fontSize: '11px', display: 'block', opacity: 0.8 }}>
-                Expires in 30 days
-              </span>
-            )}
-            {!timeRemaining && cartItems.length > 0 && (
-              <span style={{ fontSize: '11px', display: 'block', opacity: 0.8 }}>
-                Click to create cart
-              </span>
-            )}
-          </span>
-          </>
-        )}
+        <span className="checkout-icon">🛒</span>
+        <span className="checkout-text">
+          Go to Cart Page
+        </span>
       </button>
-      
-
     </div>
   );
 };
