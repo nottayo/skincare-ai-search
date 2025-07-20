@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/
+product_embeddings.json
+
+# Environment
+.env
+.env.*
+
+# Node/React
+frontend/node_modules/
+frontend/build/
+frontend/.DS_Store
+
+# VSCode
+.vscode/
+
+# Mac
+.DS_Store
+.vercel
+
+
+
