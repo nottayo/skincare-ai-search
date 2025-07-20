@@ -1,0 +1,59 @@
+# Python backend files (not needed for Node.js deployment)
+../backend/
+../backend-temp/
+*.py
+*.pyc
+__pycache__/
+venv/
+.venv/
+env/
+ENV/
+
+# Node modules (will be installed by Vercel)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Large embedding files (will be loaded from S3)
+product_embeddings_with_brands.json
+product_embeddings_small.json
+product_embeddings.json
+
+# Test files
+test-*.js
+*.test.js
+*.spec.js 
