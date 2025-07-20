@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Chatbot from './components/Chatbot';
-import AjaxCartButton from './components/AjaxCartButton';
+import DynamicCheckout from './components/DynamicCheckout';
 import './App.css';
 
 function App() {
@@ -72,19 +72,7 @@ function App() {
       </div>
 
       <Chatbot />
-      <div style={{ 
-        position: 'fixed', 
-        bottom: '20px', 
-        right: '20px', 
-        zIndex: 1000 
-      }}>
-        <AjaxCartButton 
-          buttonText="Here is my cart"
-          position="inline"
-          showCartId={false}
-          showTotal={false}
-        />
-      </div>
+      <DynamicCheckout />
     </div>
   );
 }

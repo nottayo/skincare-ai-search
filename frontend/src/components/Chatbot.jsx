@@ -69,8 +69,9 @@ export default function Chatbot() {
   });
   const bubbleTimeoutRef = useRef(null);
   const endRef = useRef(null);
-  const MIN_THINKING_TIME = 2000; // ms
+  const MIN_THINKING_TIME = 3500; // ms - increased for more natural feel
   const inputRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const menuRef = useRef(null);
   const chatWidgetRef = useRef(null);
   const [cartMessageShown, setCartMessageShown] = useState(false);
@@ -81,12 +82,90 @@ export default function Chatbot() {
   });
   const [bubbleText, setBubbleText] = useState('Ask MamaTega');
   
+  // Notification badge state
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [lastReadMessageIndex, setLastReadMessageIndex] = useState(() => {
+    const saved = localStorage.getItem('chat_messages');
+    const savedMessages = saved ? JSON.parse(saved) : [];
+    return savedMessages.length > 0 ? savedMessages.length - 1 : -1;
+  });
+  
   // Smart cart tracking states
   const [lastCartState, setLastCartState] = useState([]);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const [lastCartUpdateTime, setLastCartUpdateTime] = useState(null);
   const [cartItemsAdded, setCartItemsAdded] = useState([]);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
+
+  // Cart checking function - moved outside useEffect for global access
+  // Cart checking function - optimized to prevent excessive calls
+  const checkCart = () => {
+    // Prevent multiple simultaneous cart checks
+    if (checkCart.isRunning) return;
+    checkCart.isRunning = true;
+    
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        const currentCartItems = cart.items || [];
+        const currentCartIds = currentCartItems.map(item => item.id).sort();
+        const lastCartIds = lastCartState.map(item => item.id).sort();
+        
+        // Check if cart actually changed
+        if (JSON.stringify(currentCartIds) !== JSON.stringify(lastCartIds)) {
+          // Find newly added items
+          const newItems = currentCartItems.filter(item => 
+            !lastCartState.some(lastItem => lastItem.id === item.id)
+          );
+          
+          // Find removed items
+          const removedItems = lastCartState.filter(item => 
+            !currentCartItems.some(currentItem => currentItem.id === item.id)
+          );
+          
+          // Update cart state
+          setLastCartState(currentCartItems);
+          setLastCartUpdateTime(Date.now());
+          
+          // Handle cart changes - always update immediately
+          if (newItems.length > 0) {
+            // Items were added
+            setCartItemsAdded(prev => [...prev, ...newItems]);
+            
+            // Always update bubble and cart message immediately
+            updateBubbleText(currentCartItems, newItems);
+            // Call async function without await to avoid blocking
+            updateExistingCartMessage(currentCartItems, newItems).catch(console.error);
+          } else if (removedItems.length > 0) {
+            // Items were removed
+            setCartItemsAdded(prev => prev.filter(item => 
+              !removedItems.some(removed => removed.id === item.id)
+            ));
+            
+            // Update bubble text for cart changes
+            updateBubbleText(currentCartItems);
+            // Call async function without await to avoid blocking
+            updateExistingCartMessage(currentCartItems, []).catch(console.error);
+          }
+          
+          // Store cart IDs in localStorage for persistence
+          localStorage.setItem('last_cart_ids', JSON.stringify(currentCartIds));
+        }
+      })
+      .catch(() => {
+        // If cart fetch fails, assume empty cart
+        setLastCartState([]);
+        setCartItemsAdded([]);
+        updateBubbleText([]);
+      })
+      .finally(() => {
+        // Reset the running flag after a short delay to prevent rapid successive calls
+        setTimeout(() => {
+          checkCart.isRunning = false;
+        }, 500);
+      });
+  };
   
 
 
@@ -143,13 +222,85 @@ export default function Chatbot() {
   }, [minimized]);
 
   useEffect(() => {
-    // Only scroll for truly new messages, not updates
-    if (messages.length > 0 && shouldScrollToBottom) {
+    // Only scroll for truly new messages, not updates, and only if user hasn't scrolled up
+    if (messages.length > 0 && shouldScrollToBottom && !userScrolledUp) {
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
       setShouldScrollToBottom(false); // Reset after scrolling
     }
+    
+    // Update unread count when new messages arrive
+    if (messages.length > lastReadMessageIndex + 1 && minimized) {
+      const newUnreadCount = messages.length - (lastReadMessageIndex + 1);
+      setUnreadCount(newUnreadCount);
+    }
+    
     localStorage.setItem('chat_messages', JSON.stringify(messages));
-  }, [messages, shouldScrollToBottom]);
+  }, [messages, shouldScrollToBottom, userScrolledUp, lastReadMessageIndex, minimized]);
+
+  // Always scroll to bottom when chat is opened or messages change
+  useEffect(() => {
+    if (!minimized && endRef.current) {
+      endRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [minimized, messages]);
+
+  // Add scroll event listener to track user scrolling
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (!chatContainer) return;
+
+    const handleScroll = () => {
+      const isAtBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 5;
+      setUserScrolledUp(!isAtBottom);
+      
+      // If user manually scrolls to bottom, allow auto-scroll again
+      if (isAtBottom) {
+        setShouldScrollToBottom(true);
+      }
+    };
+
+    chatContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => chatContainer.removeEventListener('scroll', handleScroll);
+  }, [minimized]);
+
+  // Prevent input field from capturing scroll events
+  useEffect(() => {
+    const inputField = inputRef.current;
+    if (!inputField) return;
+
+    const preventScrollCapture = (e) => {
+      // Allow scroll events to bubble up to the chat container
+      e.stopPropagation();
+    };
+
+    const preventScrollOnInput = (e) => {
+      // Prevent the input field from capturing scroll events
+      if (e.target === inputField) {
+        e.stopPropagation();
+      }
+    };
+
+    inputField.addEventListener('wheel', preventScrollCapture, { passive: true });
+    inputField.addEventListener('touchmove', preventScrollCapture, { passive: true });
+    inputField.addEventListener('scroll', preventScrollOnInput, { passive: true });
+
+    // Also prevent the input container from capturing scroll
+    const inputContainer = inputField.closest('.input-pill');
+    if (inputContainer) {
+      inputContainer.addEventListener('wheel', preventScrollCapture, { passive: true });
+      inputContainer.addEventListener('touchmove', preventScrollCapture, { passive: true });
+    }
+
+    return () => {
+      inputField.removeEventListener('wheel', preventScrollCapture);
+      inputField.removeEventListener('touchmove', preventScrollCapture);
+      inputField.removeEventListener('scroll', preventScrollOnInput);
+      if (inputContainer) {
+        inputContainer.removeEventListener('wheel', preventScrollCapture);
+        inputContainer.removeEventListener('touchmove', preventScrollCapture);
+      }
+    };
+  }, []);
 
   // Separate effect for dynamic widget scrolling
 
@@ -160,6 +311,24 @@ export default function Chatbot() {
       // Mark that user has interacted by opening the chat
       setUserHasInteracted(true);
       
+      // Mark all messages as read when chat is opened
+      setLastReadMessageIndex(messages.length - 1);
+      setUnreadCount(0);
+      
+      // Immediately check cart when chat opens to get latest state
+      fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          const currentCartItems = cart.items || [];
+          setLastCartState(currentCartItems);
+          updateBubbleText(currentCartItems);
+        })
+        .catch(() => {
+          // If cart fetch fails, assume empty cart
+          setLastCartState([]);
+          updateBubbleText([]);
+        });
+      
       // Set up initial inactivity timeout when chat opens
       const initialInactivityTimer = setTimeout(() => {
         sendInactivityPrompt();
@@ -167,7 +336,7 @@ export default function Chatbot() {
       
       setInactivityTimeout(initialInactivityTimer);
     }
-  }, [minimized]);
+  }, [minimized, messages.length]);
 
   // Close dropdown when clicking outside the chat widget
   useEffect(() => {
@@ -224,73 +393,35 @@ export default function Chatbot() {
 
 
   // Smart cart monitoring - tracks cart changes and user interaction
+  // Smart cart tracking with immediate updates
   useEffect(() => {
-    const checkCart = () => {
-      fetch('/cart.js')
-        .then(res => res.json())
-        .then(cart => {
-          const currentCartItems = cart.items || [];
-          const currentCartIds = currentCartItems.map(item => item.id).sort();
-          const lastCartIds = lastCartState.map(item => item.id).sort();
-          
-          // Check if cart actually changed
-          if (JSON.stringify(currentCartIds) !== JSON.stringify(lastCartIds)) {
-            // Find newly added items
-            const newItems = currentCartItems.filter(item => 
-              !lastCartState.some(lastItem => lastItem.id === item.id)
-            );
-            
-            // Find removed items
-            const removedItems = lastCartState.filter(item => 
-              !currentCartItems.some(currentItem => currentItem.id === item.id)
-            );
-            
-            // Update cart state
-            setLastCartState(currentCartItems);
-            setLastCartUpdateTime(Date.now());
-            
-            // Handle cart changes based on user interaction
-            if (newItems.length > 0) {
-              // Items were added
-              setCartItemsAdded(prev => [...prev, ...newItems]);
-              
-              // Only update bubble if user hasn't interacted since last cart update
-              if (!userHasInteracted || !lastCartUpdateTime || (Date.now() - lastCartUpdateTime) > 30000) {
-                updateBubbleText(currentCartItems, newItems);
-                // Call async function without await to avoid blocking
-                updateExistingCartMessage(currentCartItems, newItems).catch(console.error);
-              }
-            } else if (removedItems.length > 0) {
-              // Items were removed
-              setCartItemsAdded(prev => prev.filter(item => 
-                !removedItems.some(removed => removed.id === item.id)
-              ));
-              
-              // Update bubble text for cart changes
-              updateBubbleText(currentCartItems);
-              // Call async function without await to avoid blocking
-              updateExistingCartMessage(currentCartItems, []).catch(console.error);
-            }
-            
-            // Store cart IDs in localStorage for persistence
-            localStorage.setItem('last_cart_ids', JSON.stringify(currentCartIds));
-          }
-        })
-        .catch(() => {
-          // If cart fetch fails, assume empty cart
-          setLastCartState([]);
-          setCartItemsAdded([]);
-          updateBubbleText([]);
-        });
-    };
-
     // Check cart immediately
     checkCart();
 
-    // Set up interval to check cart every 30 seconds
-    const interval = setInterval(checkCart, 30000);
+    // Set up interval to check cart every 3 seconds for balanced updates
+    const interval = setInterval(checkCart, 3000);
 
-    return () => clearInterval(interval);
+    // Check cart when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkCart();
+      }
+    };
+
+    // Check cart on user interactions (click, scroll, etc.)
+    const handleUserInteraction = () => {
+      checkCart();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('click', handleUserInteraction);
+    };
   }, [lastCartState, userHasInteracted, lastCartUpdateTime]);
 
 
@@ -307,6 +438,124 @@ export default function Chatbot() {
   }, [userHasInteracted]);
 
   const timeStamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Function to format messages with clickable links
+  const formatMessageWithLinks = (text, whatsappUrl = null) => {
+    if (!text) return '';
+    
+    // Handle markdown links first (like [Click here to chat on WhatsApp](URL))
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    let match;
+    let lastIndex = 0;
+    const elements = [];
+    
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        elements.push(<span key={`text-${lastIndex}`}>{text.slice(lastIndex, match.index)}</span>);
+      }
+      
+      // Add the clickable link
+      elements.push(
+        <a
+          key={`link-${match.index}`}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: 'inherit',
+            fontFamily: 'inherit',
+            textDecoration: 'underline'
+          }}
+        >
+          {match[1]}
+        </a>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      elements.push(<span key={`text-${lastIndex}`}>{text.slice(lastIndex)}</span>);
+    }
+    
+    // If we found markdown links, return the processed elements
+    if (elements.length > 0) {
+      return elements;
+    }
+    
+    // If there's a WhatsApp URL, replace "Link" with a clickable link
+    if (whatsappUrl && text.includes('Link')) {
+      const parts = text.split('Link');
+      return parts.map((part, index) => {
+        if (index < parts.length - 1) {
+          return (
+            <React.Fragment key={index}>
+              <span>{part}</span>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 'inherit',
+                  fontFamily: 'inherit',
+                  textDecoration: 'underline'
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Just copy the link to clipboard instead of opening
+                  navigator.clipboard.writeText(whatsappUrl);
+                  alert('WhatsApp link copied to clipboard!');
+                }}
+              >
+                Link
+              </a>
+            </React.Fragment>
+          );
+        } else {
+          return <span key={index}>{part}</span>;
+        }
+      });
+    }
+    
+    // Regular expression to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    // Split text by URLs and create React elements
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+      if (urlRegex.test(part)) {
+        // This is a URL - make it clickable but show "Link" instead of the URL
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 'inherit',
+              fontFamily: 'inherit',
+              textDecoration: 'underline',
+              wordBreak: 'break-all'
+            }}
+          >
+            Link
+          </a>
+        );
+      } else {
+        // This is regular text
+        return <span key={index}>{part}</span>;
+      }
+    });
+  };
 
   // Function to get random welcome message
   const getRandomWelcomeMessage = () => {
@@ -389,7 +638,7 @@ export default function Chatbot() {
     const defaultMessage = 'Hi MamaTega! I need help with my order.';
     const whatsappMessage = message || defaultMessage;
     const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
-    window.open(whatsappLink, '_blank');
+    return whatsappLink;
   };
 
   // Function to handle Instagram DM connection
@@ -398,7 +647,7 @@ export default function Chatbot() {
     const instagramMessage = message || defaultMessage;
     // Instagram profile URL
     const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
-    window.open(instagramLink, '_blank');
+    return instagramLink;
   };
 
   // Smart function to update bubble text based on cart activity
@@ -439,8 +688,8 @@ export default function Chatbot() {
       // Create or update cart page
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocalhost
-        ? 'http://localhost:10000/api/cart/create'
-        : 'https://skincare-ai-backend.onrender.com/api/cart/create';
+        ? 'http://localhost:5001/api/cart/create'
+        : `http://${window.location.hostname}:5001/api/cart/create`;
       
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -562,7 +811,7 @@ export default function Chatbot() {
             return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
           }).join('\n');
           
-          const whatsappMessage = `Hi MamaTega! I have these items in my cart:\n${itemNames.map((item, index) => {
+          const whatsappMessage = `Hi! I have these items in my cart:\n${itemNames.map((item, index) => {
             const variantInfo = itemVariants[index];
             return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
           }).join('\n')}\n\nCan you help me with these products?`;
@@ -636,11 +885,11 @@ export default function Chatbot() {
         ).join('\n');
         const totalPrice = (cart.total_price / 100).toFixed(2);
         
-        const whatsappMessage = `Hi MamaTega! I'd like to complete my order:\n\n${itemDetails}\n\nTotal: $${totalPrice}\n\nCan you help me process this order?`;
+        const whatsappMessage = `Hi! I'd like to complete my order:\n\n${itemDetails}\n\nTotal: $${totalPrice}\n\nCan you help me process this order?`;
         const whatsappLink = `https://wa.me/2348189880899?text=${encodeURIComponent(whatsappMessage)}`;
         const instagramLink = `https://www.instagram.com/mamategacosmeticsandspa/`;
         
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **[Message on Instagram](${instagramLink})** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **Visit Store** - Come shop directly at our location\n📱 **[Order via WhatsApp](${whatsappLink})** - Complete order with payment\n📸 **Message on Instagram** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nLet me know which option you prefer!`;
         
         setMessages(m => [
           ...m,
@@ -657,7 +906,7 @@ export default function Chatbot() {
       })
       .catch(() => {
         // Fallback if cart fetch fails
-        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **[Visit Store](javascript:void(0))** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **[Message on Instagram](https://www.instagram.com/mamategacosmeticsandspa/)** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nClick any link above to proceed!`;
+        const orderOptions = `Great! How would you like to complete your order?\n\n**Choose your preferred method:**\n\n🛒 **Visit Store** - Come shop directly at our location\n📱 **[Order via WhatsApp](https://wa.me/2348189880899)** - Complete order with payment\n📸 **Message on Instagram** - Order via Instagram DM\n\n**Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n\n*Note: Prices and product availability may change frequently as they are dynamic.*\n\nLet me know which option you prefer!`;
         
         setMessages(m => [
           ...m,
@@ -675,6 +924,8 @@ export default function Chatbot() {
     const prompt = (preset !== undefined ? preset : input).trim();
     if (!prompt) return;
 
+
+
     // Mark that user has interacted by sending a message
     setUserHasInteracted(true);
 
@@ -691,6 +942,8 @@ export default function Chatbot() {
     setInput('');
     setLoading(true);
     setSelectedSuggestion(null); // Reset selection after sending
+    
+    // Don't block input during loading - allow user to continue typing
 
     // 2) Show typing indicator
     const typingMsg = { type: 'bot', isTyping: true };
@@ -727,14 +980,14 @@ export default function Chatbot() {
     }, 4000);
 
     const start = Date.now();
-    let answer = '', results = [], view_all_link = '', newSugs = [];
+    let answer = '', results = [], view_all_link = '', newSugs = [], whatsappUrl = '';
 
     // Determine backend API URL based on environment
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     // Use Render backend for production
     const API_URL = isLocalhost
-      ? 'http://localhost:10000/ask'
-      : 'https://skincare-ai-backend.onrender.com/ask';
+      ? 'http://localhost:5001/ask'
+                : `http://${window.location.hostname}:5001/ask`;
 
     const history = messages.slice(-15).map(msg => ({
       role: msg.type === 'user' ? 'user' : 'assistant',
@@ -746,19 +999,37 @@ export default function Chatbot() {
 
     let apiError = null;
     try {
+      console.log('[FRONTEND DEBUG] Sending request to:', API_URL);
+      console.log('[FRONTEND DEBUG] Request payload:', { prompt, history: history.length, nameAskedBefore, chatId });
+      
       const res = await axios.post(API_URL, {
         prompt,
         history,
         nameAskedBefore,
         chatId,
+        timestamp: Date.now(), // Cache busting
         ...(sessionId && { sessionId }),
+      }, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       });
       const data = res.data;
+      
+      console.log('[FRONTEND DEBUG] Response received:', data);
+      console.log('[FRONTEND DEBUG] Answer:', data.answer);
+      console.log('[FRONTEND DEBUG] Results count:', data.results ? data.results.length : 0);
+      console.log('[FRONTEND DEBUG] Answer length:', data.answer ? data.answer.length : 0);
+      console.log('[FRONTEND DEBUG] Answer type:', typeof data.answer);
+      
       if (data.sessionId) setSessionId(data.sessionId);
       answer = data.answer;
       results = data.results || [];
       view_all_link = data.view_all_link || '';
       newSugs = data.suggestions || [];
+      whatsappUrl = data.whatsappUrl || '';
       
       // Check if the AI asked for the name and mark it as asked
       if (answer && (answer.includes("What may I call you") || answer.includes("What should I call you") || answer.includes("What's your name"))) {
@@ -775,12 +1046,20 @@ export default function Chatbot() {
     const lowerAnswer = answer ? answer.toLowerCase() : '';
     const lowerPrompt = prompt.toLowerCase();
     
+    console.log('[FRONTEND DEBUG] Checking answer for WhatsApp fallback:');
+    console.log('[FRONTEND DEBUG] Answer:', answer);
+    console.log('[FRONTEND DEBUG] Lower answer:', lowerAnswer);
+    console.log('[FRONTEND DEBUG] API error:', apiError);
+    
     // Keywords that indicate product availability issues or API limits
     const availabilityKeywords = [
       'don\'t have', 'don\'t carry', 'not available', 'out of stock', 'currently unavailable',
       'not in our inventory', 'don\'t stock', 'unfortunately we don\'t', 'we don\'t have',
       'not available in our store', 'don\'t have this brand', 'don\'t carry this brand'
     ];
+    
+    console.log('[FRONTEND DEBUG] Checking availability keywords in answer:', lowerAnswer);
+    console.log('[FRONTEND DEBUG] Availability keywords found:', availabilityKeywords.filter(keyword => lowerAnswer.includes(keyword)));
     
     const apiLimitKeywords = [
       'rate limit', 'api limit', 'temporarily unavailable', 'service temporarily',
@@ -791,6 +1070,8 @@ export default function Chatbot() {
     const needsWhatsApp = availabilityKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
                          apiLimitKeywords.some(keyword => lowerAnswer.includes(keyword)) ||
                          (answer === null && apiError); // Only if there's an actual API error
+    
+    console.log('[FRONTEND DEBUG] Needs WhatsApp fallback:', needsWhatsApp);
     
     if (needsWhatsApp) {
       // Create WhatsApp message with user's question
@@ -826,8 +1107,7 @@ export default function Chatbot() {
     } else if (isWhatsAppRequest && (isCartResponse || isOrderOptionsResponse)) {
       // Use the pre-generated WhatsApp link if available, otherwise create one
       if (lastBotMessage.whatsappLink) {
-        window.open(lastBotMessage.whatsappLink, '_blank');
-        answer = "Perfect! I've opened WhatsApp for you with your complete order details including quantities and prices. You can now chat directly with our team to complete your purchase! 📱";
+        answer = `Perfect! Here's your WhatsApp link with your complete order details including quantities and prices: [Click here to chat on WhatsApp](${lastBotMessage.whatsappLink}) 📱`;
       } else {
         // Fallback - get cart items for WhatsApp message
         const cartItems = lastBotMessage.cartItems || [];
@@ -850,14 +1130,13 @@ export default function Chatbot() {
           const variantInfo = itemVariants[index];
           return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
         }).join('\n')}\n\nCan you help me with these products?`;
-        connectToWhatsApp(whatsappMessage);
-        answer = "Perfect! I've opened WhatsApp for you with your cart items. You can now chat directly with our team for personalized assistance! 📱";
+        const whatsappLink = connectToWhatsApp(whatsappMessage);
+        answer = `Perfect! Here's your WhatsApp link with your cart items: [Click here to chat on WhatsApp](${whatsappLink}) 📱`;
       }
     } else if (isInstagramRequest && (isCartResponse || isOrderOptionsResponse)) {
       // Use the pre-generated Instagram link if available, otherwise create one
       if (lastBotMessage.instagramLink) {
-        window.open(lastBotMessage.instagramLink, '_blank');
-        answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly to complete your order! 📸";
+        answer = `Perfect! Here's your Instagram link: [Click here to message on Instagram](${lastBotMessage.instagramLink}) 📸`;
       } else {
         // Fallback - get cart items for Instagram message
         const cartItems = lastBotMessage.cartItems || [];
@@ -880,20 +1159,20 @@ export default function Chatbot() {
           const variantInfo = itemVariants[index];
           return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
         }).join('\n')}\n\nCan you help me with these products?`;
-        connectToInstagram(instagramMessage);
-        answer = "Perfect! I've opened Instagram DM for you. You can now message our team directly for personalized assistance! 📸";
+        const instagramLink = connectToInstagram(instagramMessage);
+        answer = `Perfect! Here's your Instagram link: [Click here to message on Instagram](${instagramLink}) 📸`;
       }
     } else if (isStoreVisitRequest && isOrderOptionsResponse) {
       // User wants to visit store
       answer = "Great choice! Here's our store information:\n\n📍 **MamaTega Cosmetics Store**\n🕒 **Store Hours:**\n• Monday–Saturday: 8:00 AM–8:00 PM\n• Sunday: 1:00 PM–7:00 PM\n📞 **Phone:** +234 818 988 0899\n\nWe'd love to see you in person! Our team will be happy to help you with your selections and provide personalized recommendations. 🛍️";
     } else if (isWhatsAppRequest) {
       // General WhatsApp request
-      connectToWhatsApp();
-      answer = "Great! I've opened WhatsApp for you. You can now chat directly with our team! 📱";
+      const whatsappLink = connectToWhatsApp();
+      answer = `Great! Here's your WhatsApp link: [Click here to chat on WhatsApp](${whatsappLink}) 📱`;
     } else if (isInstagramRequest) {
       // General Instagram request
-      connectToInstagram();
-      answer = "Great! I've opened Instagram DM for you. You can now message our team directly! 📸";
+      const instagramLink = connectToInstagram();
+      answer = `Great! Here's your Instagram link: [Click here to message on Instagram](${instagramLink}) 📸`;
     } else if (isGeneralContactRequest && isCartResponse) {
       // General contact request with cart - offer both options
       const cartItems = lastBotMessage.cartItems || [];
@@ -916,9 +1195,10 @@ export default function Chatbot() {
         const variantInfo = itemVariants[index];
         return `${index + 1}. ${item} (Qty: ${itemQuantities[index]}${variantInfo})`;
       }).join('\n')}\n\nCan you help me with these products?`;
-      connectToWhatsApp(whatsappMessage);
+      const whatsappLink = connectToWhatsApp(whatsappMessage);
+      const instagramLink = connectToInstagram();
       
-      answer = "I've opened WhatsApp for you with your cart items! You can also reach us on Instagram DM if you prefer. 📱📸";
+      answer = `Here are your contact options with your cart items: [Click here to chat on WhatsApp](${whatsappLink}) or [Click here to message on Instagram](${instagramLink}) 📱📸`;
     }
 
     clearTimeout(waitingTimeout);
@@ -934,7 +1214,7 @@ export default function Chatbot() {
       await new Promise(r => setTimeout(r, MIN_THINKING_TIME - elapsed));
     }
 
-    // 4) Remove typing bubble & add real bot bubble or WhatsApp fallback
+    // 4) Remove typing bubble & add real bot bubble with typing animation
     setMessages(m => {
       const withoutTyping = m.filter(mg => !mg.isTyping && !mg.waiting);
       // WhatsApp fallback ONLY if answer is null/empty or an explicit error
@@ -948,16 +1228,79 @@ export default function Chatbot() {
       
       return [
         ...withoutTyping,
-        { type: 'bot', text: answer, results, view_all_link, time: timeStamp() }
+        { 
+          type: 'bot', 
+          text: '', // Start with empty text
+          fullText: answer, // Store the full text for typing animation
+          isTyping: true, // Mark as typing to trigger animation
+          results, 
+          view_all_link, 
+          whatsappUrl: whatsappUrl, 
+          time: timeStamp() 
+        }
       ];
     });
 
-    // 5) Update suggestions if provided
+    // Start the typing animation
+    console.log('[FRONTEND DEBUG] Starting typing animation for answer:', answer);
+    setTimeout(() => {
+      setMessages(m => {
+        const lastMessage = m[m.length - 1];
+        console.log('[FRONTEND DEBUG] Last message:', lastMessage);
+        if (lastMessage && lastMessage.type === 'bot' && lastMessage.isTyping && lastMessage.fullText) {
+          const fullText = lastMessage.fullText;
+          let currentIndex = 0;
+          
+          const typeNextChar = () => {
+            if (currentIndex < fullText.length) {
+              setMessages(prevMessages => {
+                const updatedMessages = [...prevMessages];
+                const lastMsg = updatedMessages[updatedMessages.length - 1];
+                if (lastMsg && lastMsg.type === 'bot' && lastMsg.isTyping) {
+                  lastMsg.text = fullText.substring(0, currentIndex + 1);
+                  // Allow user to scroll freely during typing - don't force auto-scroll
+                  // Only auto-scroll if user is at the very bottom (within 5px)
+                  const chatContainer = document.querySelector('.chat-messages');
+                  if (chatContainer) {
+                    const isAtBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 5;
+                    if (isAtBottom) {
+                      setShouldScrollToBottom(true);
+                    }
+                  }
+                }
+                return updatedMessages;
+              });
+              currentIndex++;
+              
+              // Random typing speed between 20-50ms for natural feel
+              const typingSpeed = Math.random() * 30 + 20;
+              setTimeout(typeNextChar, typingSpeed);
+            } else {
+              // Animation complete - mark as not typing
+              setMessages(prevMessages => {
+                const updatedMessages = [...prevMessages];
+                const lastMsg = updatedMessages[updatedMessages.length - 1];
+                if (lastMsg && lastMsg.type === 'bot' && lastMsg.isTyping) {
+                  lastMsg.isTyping = false;
+                  lastMsg.text = fullText;
+                }
+                return updatedMessages;
+              });
+            }
+          };
+          
+          // Start typing animation
+          setTimeout(typeNextChar, 100);
+        }
+        return m;
+      });
+    }, 100);
+
+    // 6) Update suggestions if provided
     if (Array.isArray(newSugs) && newSugs.length > 0) setSuggestions(newSugs);
 
     setLoading(false);
-    // Focus input after answer
-    setTimeout(() => { inputRef.current?.focus(); }, 100);
+    // Don't force focus - let user control the input
 
     // Set up inactivity timeout (2 minutes)
     const inactivityTimer = setTimeout(() => {
@@ -972,9 +1315,22 @@ export default function Chatbot() {
       {minimized ? (
         <>
           {bubbleVisible && (
-            <div className={`chatbot-bubble ${isExciting ? 'exciting' : ''}`} onClick={() => setMinimized(false)}>
+            <div className={`chatbot-bubble ${isExciting ? 'exciting' : ''}`} onClick={() => {
+              setMinimized(false);
+              // Reset unread count when chat is opened
+              setUnreadCount(0);
+              setLastReadMessageIndex(messages.length - 1);
+              // Check cart once when widget opens
+              checkCart();
+            }}>
               <span className="bubble-icon" role="img" aria-label="shopping bag">👩🏾</span>
               <span className="bubble-text">{bubbleText}</span>
+              {/* Notification badge */}
+              {unreadCount > 0 && (
+                <div className="notification-badge">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </div>
+              )}
             </div>
           )}
         </>
@@ -1028,7 +1384,7 @@ export default function Chatbot() {
               </div>
             </div>
           </div>
-          <div className="chat-messages">
+          <div className="chat-messages" ref={chatContainerRef}>
             {messages.map((msg, i) => {
               // Bounce animation for bot answer if it's responding to the last user message
               let bounce = false;
@@ -1041,9 +1397,13 @@ export default function Chatbot() {
               // Add glow class only to the last user message (more explicit logic)
               const userMessages = messages.filter(m => m.type === 'user');
               const isLastUser = msg.type === 'user' && userMessages.length > 0 && userMessages[userMessages.length - 1] === msg;
+              
+              // Check if this is the last unread message (for red border indicator)
+              const isLastUnread = i === lastReadMessageIndex + 1 && i < messages.length - 1;
+              
               return (
                 <div key={i}
-                  className={`chat-message ${msg.type}${msg.isTyping ? ' typing' : ''}${bounce ? ' bounce' : ''}${isLastUser ? ' glow' : ''}`}>
+                  className={`chat-message ${msg.type}${msg.isTyping ? ' typing' : ''}${bounce ? ' bounce' : ''}${isLastUser ? ' glow' : ''}${isLastUnread ? ' unread' : ''}`}>
                   <div className="message-bubble">
                     {/* Only show MamaTega label for bot messages, and always show the message text below, but not for typing indicator */}
                     {msg.type === 'bot' && msg.isTyping && (
@@ -1054,7 +1414,7 @@ export default function Chatbot() {
                       </span>
                     )}
                     {msg.type === 'bot' && !msg.isTyping && <div className={`bubble-label bot-label${isDark ? ' dark' : ''}`}>MamaTega</div>}
-                    {msg.type === 'bot' && !msg.isTyping && msg.text && (
+                    {msg.type === 'bot' && !msg.isTyping && (msg.answer || msg.text) && (
                       <ReactMarkdown
                         components={{
                           a: ({node, children, ...props}) => (
@@ -1070,12 +1430,12 @@ export default function Chatbot() {
                                 textDecoration: 'underline',
                               }}
                             >
-                              {children && children.length > 0 ? children : <span>Link</span>}
+                              {children}
                             </a>
                           )
                         }}
                       >
-                        {msg.text}
+                        {msg.answer || msg.text}
                       </ReactMarkdown>
                     )}
                     {/* For user messages, show only the message text, no label */}
@@ -1103,21 +1463,7 @@ export default function Chatbot() {
                         {msg.text}
                       </ReactMarkdown>
                     )}
-                    {msg.results?.length > 0 && !msg.isTyping && (
-                      <div className="message-html">
-                        <p>Here’s what I found:</p>
-                        {msg.results.map((p,j) => (
-                          <div key={j} className="product-item">
-                            <a href={p.link} target="_blank" rel="noreferrer">{p.title}</a>
-                          </div>
-                        ))}
-                        {msg.view_all_link && (
-                          <div className="view-all-block">
-                            <a href={msg.view_all_link} target="_blank" rel="noreferrer"><span aria-label="View All Matches" role="img">🔍</span> View All Matches</a>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {/* Product results removed - AI will mention products naturally in its response */}
                     {msg.time && !msg.isTyping && <div className="timestamp">{msg.time}</div>}
                   </div>
                 </div>
@@ -1128,7 +1474,36 @@ export default function Chatbot() {
             
             <div ref={endRef} />
           </div>
-          {/* Only show suggestions at the start, before any user message */}
+          
+          {/* Scroll to bottom button */}
+          {userScrolledUp && (
+            <button 
+              className="scroll-to-bottom-btn"
+              onClick={() => {
+                endRef.current?.scrollIntoView({ behavior: 'smooth' });
+                setUserScrolledUp(false);
+              }}
+              title="Scroll to bottom"
+            >
+              ↓
+            </button>
+          )}
+          {/* Show suggestions as clickable buttons after every bot response if suggestions are present */}
+          {messages.length > 0 && messages[messages.length-1].type === 'bot' && messages[messages.length-1].suggestions && messages[messages.length-1].suggestions.length > 0 && (
+            <div className="suggestions-container suggestions-vertical">
+              {messages[messages.length-1].suggestions.slice(0, 4).map((s, i) => (
+                <button
+                  key={i}
+                  className={`suggestion-btn${selectedSuggestion === i ? ' selected' : ''}`}
+                  onClick={() => { setSelectedSuggestion(i); sendMessage(s); }}
+                  disabled={loading}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Only show initial suggestions at the start, before any user message */}
           {messages.length === 1 && (
             <div className="suggestions-container suggestions-vertical initial-suggestions">
               {(suggestions && suggestions.length > 0 ? suggestions.slice(0, 3) : getRandomSuggestions().slice(0, 3)).map((s,i) => (

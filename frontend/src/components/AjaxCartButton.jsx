@@ -51,9 +51,7 @@ const AjaxCartButton = ({
     setIsLoading(true);
     try {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost
-        ? 'http://localhost:10000/api/cart/create'
-        : 'https://skincare-ai-backend.onrender.com/api/cart/create';
+      const API_URL = isLocalhost ? 'http://localhost:5001/api/cart/create' : `http://${window.location.hostname}:5001/api/cart/create`;
       
       // Use existing cart ID if available, otherwise create new one
       const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';

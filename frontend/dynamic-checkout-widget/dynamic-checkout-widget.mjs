@@ -44,10 +44,24 @@ const DynamicCheckout = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cartUrl, setCartUrl] = useState("");
-  const [showTooltip, setShowTooltip] = useState(false);
   const [lastCartState, setLastCartState] = useState([]);
+  const [cartId, setCartId] = useState("");
+  const [showCopied, setShowCopied] = useState(false);
+  const [cartExpiresAt, setCartExpiresAt] = useState(null);
   const intervalRef = useRef(null);
   useEffect(() => {
+    const existingExpiresAt = localStorage.getItem("mamatega_cart_expires");
+    if (existingExpiresAt) {
+      setCartExpiresAt(existingExpiresAt);
+    }
+    const existingCartId = localStorage.getItem("mamatega_cart_id");
+    if (existingCartId) {
+      const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const backendUrl = isLocalhost ? "http://localhost:5001" : `http://${window.location.hostname}:5001`;
+      const fullCartUrl = `${backendUrl}/cart/${existingCartId}`;
+      setCartUrl(fullCartUrl);
+      setCartId(existingCartId);
+    }
     const checkCart = () => {
       fetch("/cart.js").then((res) => res.json()).then((cart) => {
         const currentCartItems = cart.items || [];
@@ -57,9 +71,10 @@ const DynamicCheckout = () => {
           setCartItems(currentCartItems);
           setLastCartState(currentCartItems);
           if (currentCartItems.length > 0) {
-            createCartPage(currentCartItems);
+            createOrUpdateCartPage(currentCartItems);
           } else {
             setCartUrl("");
+            setCartId("");
           }
         }
       }).catch((error) => {
@@ -74,12 +89,13 @@ const DynamicCheckout = () => {
       }
     };
   }, [lastCartState]);
-  const createCartPage = async (items) => {
+  const createOrUpdateCartPage = async (items) => {
     if (items.length === 0) return;
     setIsLoading(true);
     try {
       const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const API_URL = isLocalhost ? "http://localhost:10000/api/cart/create" : "https://skincare-ai-backend.onrender.com/api/cart/create";
+      const API_URL = isLocalhost ? "http://localhost:5001/api/cart/create" : `http://${window.location.hostname}:5001/api/cart/create`;
+      const existingCartId = localStorage.getItem("mamatega_cart_id");
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -87,17 +103,25 @@ const DynamicCheckout = () => {
         },
         body: JSON.stringify({
           items,
+          existing_cart_id: existingCartId,
           user_info: {
             user_agent: navigator.userAgent,
             timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-            source: "dynamic_checkout_widget"
+            source: "dynamic_checkout_widget",
+            referrer: window.location.href
           }
         })
       });
       if (response.ok) {
         const cartData = await response.json();
-        const fullCartUrl = `${window.location.origin}${cartData.cart_url}`;
+        setCartId(cartData.cart_id);
+        const isLocalhost2 = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        const backendUrl = isLocalhost2 ? "http://localhost:5001" : `http://${window.location.hostname}:5001`;
+        const fullCartUrl = `${backendUrl}/cart/${cartData.cart_id}`;
         setCartUrl(fullCartUrl);
+        localStorage.setItem("mamatega_cart_id", cartData.cart_id);
+        localStorage.setItem("mamatega_cart_expires", cartData.expires_at);
+        setCartExpiresAt(cartData.expires_at);
       }
     } catch (error) {
       console.error("Error creating cart page:", error);
@@ -108,71 +132,45 @@ const DynamicCheckout = () => {
   const handleCheckoutClick = () => {
     if (cartUrl) {
       window.open(cartUrl, "_blank");
-    }
-  };
-  const copyCartLink = async () => {
-    if (cartUrl) {
-      try {
-        await navigator.clipboard.writeText(cartUrl);
-        setShowTooltip(true);
-        setTimeout(() => setShowTooltip(false), 2e3);
-      } catch (error) {
-        console.error("Failed to copy link:", error);
-      }
+    } else if (cartItems.length > 0) {
+      createOrUpdateCartPage(cartItems);
     }
   };
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
   };
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + (item.final_price || 0), 0) / 100;
+  const getTimeRemaining = () => {
+    const expiresAt = cartExpiresAt || localStorage.getItem("mamatega_cart_expires");
+    if (!expiresAt) return null;
+    const now = /* @__PURE__ */ new Date();
+    const expiry = new Date(expiresAt);
+    if (isNaN(expiry.getTime())) return null;
+    const timeRemaining2 = expiry - now;
+    if (timeRemaining2 <= 0) return "Expired";
+    const hours = Math.floor(timeRemaining2 / (1e3 * 60 * 60));
+    const minutes = Math.floor(timeRemaining2 % (1e3 * 60 * 60) / (1e3 * 60));
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    return `${hours}h ${minutes}m`;
   };
-  if (cartItems.length === 0) {
-    return null;
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "dynamic-checkout-widget", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "checkout-button-container", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          className: "dynamic-checkout-btn",
-          onClick: handleCheckoutClick,
-          disabled: isLoading || !cartUrl,
-          children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "loading-spinner", children: "⏳" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "checkout-icon", children: "🛒" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "checkout-text", children: [
-              "Here is my cart (",
-              getTotalItems(),
-              " items)"
-            ] })
-          ] })
-        }
-      ),
-      cartUrl && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          className: "copy-link-btn",
-          onClick: copyCartLink,
-          title: "Copy cart link",
-          children: "📋"
-        }
-      )
-    ] }),
-    showTooltip && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "tooltip", children: "Cart link copied! 📋" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "cart-summary", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "summary-item", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "summary-label", children: "Items:" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "summary-value", children: getTotalItems() })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "summary-item", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "summary-label", children: "Total:" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "summary-value", children: [
-          "$",
-          getTotalPrice().toFixed(2)
+  const timeRemaining = getTimeRemaining();
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "dynamic-checkout-container", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "button",
+    {
+      className: "dynamic-checkout-btn",
+      onClick: handleCheckoutClick,
+      disabled: isLoading,
+      title: cartUrl ? `Click to view cart page (Expires in: ${timeRemaining || "Unknown"})` : "Add items to cart first",
+      children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "loading-spinner", children: "⏳" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "checkout-icon", children: "🛒" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "checkout-text", children: [
+          getTotalItems(),
+          " items",
+          timeRemaining && timeRemaining !== "Expired" && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontSize: "11px", display: "block", opacity: 0.8 }, children: "Expires in 30 days" }),
+          !timeRemaining && cartItems.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontSize: "11px", display: "block", opacity: 0.8 }, children: "Click to create cart" })
         ] })
       ] })
-    ] })
-  ] });
+    }
+  ) });
 };
 window.initDynamicCheckout = function(containerId = "dynamic-checkout-container") {
   let container = document.getElementById(containerId);

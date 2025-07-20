@@ -1,37 +1,111 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Environment variables and secrets
-.env
-.env.*
-
-# Embeddings and training data
-product_embeddings.json
-trainingdata.jsonl
-trainingdata_gpt35.jsonl
-*.jsonl
-
-# Credentials
-*.key
-*.pem
-
-# VSCode and editor settings
-.vscode/
-.DS_Store
+# Python backend (not needed for Vercel deployment)
+backend/
+backend-temp/
 
 # Node modules
 node_modules/
+*/node_modules/
 
-# Virtual environments
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Build outputs
+build/
+dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
+ENV/
+env/
 .venv/
 
-# Mac system files
-.DS_Store
+# Jupyter Notebook
+.ipynb_checkpoints
 
-# Chat logs and sensitive data
-chat_logs.csv
-*.csv
-logs/
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json

@@ -5,13 +5,30 @@ const DynamicCheckout = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cartUrl, setCartUrl] = useState('');
-  const [showTooltip, setShowTooltip] = useState(false);
   const [lastCartState, setLastCartState] = useState([]);
   const [cartId, setCartId] = useState('');
+  const [showCopied, setShowCopied] = useState(false);
+  const [cartExpiresAt, setCartExpiresAt] = useState(null);
   const intervalRef = useRef(null);
 
   // Monitor cart changes
   useEffect(() => {
+    // Load existing cart expiry time
+    const existingExpiresAt = localStorage.getItem('mamatega_cart_expires');
+    if (existingExpiresAt) {
+      setCartExpiresAt(existingExpiresAt);
+    }
+    
+    // Load existing cart URL and update it to use backend URL
+    const existingCartId = localStorage.getItem('mamatega_cart_id');
+    if (existingCartId) {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const backendUrl = isLocalhost ? 'http://localhost:5001' : `http://${window.location.hostname}:5001`;
+      const fullCartUrl = `${backendUrl}/cart/${existingCartId}`;
+      setCartUrl(fullCartUrl);
+      setCartId(existingCartId);
+    }
+    
     const checkCart = () => {
       fetch('/cart.js')
         .then(res => res.json())
@@ -58,42 +75,43 @@ const DynamicCheckout = () => {
     setIsLoading(true);
     try {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost
-        ? 'http://localhost:10000/api/cart/create'
-        : 'https://skincare-ai-backend.onrender.com/api/cart/create';
+      const API_URL = isLocalhost ? 'http://localhost:5001/api/cart/create' : `http://${window.location.hostname}:5001/api/cart/create`;
       
-      // If we already have a cart ID, update it instead of creating new one
-      const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
-      const method = cartId ? 'PUT' : 'POST';
+      // Get existing cart ID from localStorage
+      const existingCartId = localStorage.getItem('mamatega_cart_id');
       
-      const response = await fetch(API_URL.replace('/create', endpoint), {
-        method: method,
+      const response = await fetch(API_URL, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           items: items,
+          existing_cart_id: existingCartId,
           user_info: {
             user_agent: navigator.userAgent,
             timestamp: new Date().toISOString(),
-            source: 'dynamic_checkout_widget'
+            source: 'dynamic_checkout_widget',
+            referrer: window.location.href
           }
         })
       });
       
       if (response.ok) {
         const cartData = await response.json();
-        
-        // If creating new cart, get the cart ID
-        if (!cartId && cartData.cart_id) {
-          setCartId(cartData.cart_id);
-        }
-        
-        const fullCartUrl = `${window.location.origin}/cart/${cartId || cartData.cart_id}`;
+        setCartId(cartData.cart_id);
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const backendUrl = isLocalhost ? 'http://localhost:5001' : `http://${window.location.hostname}:5001`;
+        const fullCartUrl = `${backendUrl}/cart/${cartData.cart_id}`;
         setCartUrl(fullCartUrl);
+        
+        // Store cart ID in localStorage for persistence
+        localStorage.setItem('mamatega_cart_id', cartData.cart_id);
+        localStorage.setItem('mamatega_cart_expires', cartData.expires_at);
+        setCartExpiresAt(cartData.expires_at);
       }
     } catch (error) {
-      console.error('Error creating/updating cart page:', error);
+      console.error('Error creating cart page:', error);
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +119,11 @@ const DynamicCheckout = () => {
 
   const handleCheckoutClick = () => {
     if (cartUrl) {
+      // Open cart page in new tab
       window.open(cartUrl, '_blank');
+    } else if (cartItems.length > 0) {
+      // If no cart URL but items exist, create cart first
+      createOrUpdateCartPage(cartItems);
     }
   };
 
@@ -109,8 +131,8 @@ const DynamicCheckout = () => {
     if (cartUrl) {
       try {
         await navigator.clipboard.writeText(cartUrl);
-        setShowTooltip(true);
-        setTimeout(() => setShowTooltip(false), 2000);
+        setShowCopied(true);
+        setTimeout(() => setShowCopied(false), 2000);
       } catch (error) {
         console.error('Failed to copy link:', error);
       }
@@ -121,69 +143,62 @@ const DynamicCheckout = () => {
     return cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
   };
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + (item.final_price || 0), 0) / 100;
+  const getTimeRemaining = () => {
+    const expiresAt = cartExpiresAt || localStorage.getItem('mamatega_cart_expires');
+    if (!expiresAt) return null;
+    
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    
+    // Check if the date is valid
+    if (isNaN(expiry.getTime())) return null;
+    
+    const timeRemaining = expiry - now;
+    
+    if (timeRemaining <= 0) return 'Expired';
+    
+    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    
+    // Check if calculations are valid
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    
+    return `${hours}h ${minutes}m`;
   };
 
-  // Don't render if no items in cart
-  if (cartItems.length === 0) {
-    return null;
-  }
+  const timeRemaining = getTimeRemaining();
 
   return (
-    <div className="dynamic-checkout-widget">
-      <div className="checkout-button-container">
-        <button 
-          className="dynamic-checkout-btn"
-          onClick={handleCheckoutClick}
-          disabled={isLoading || !cartUrl}
-        >
-          {isLoading ? (
-            <span className="loading-spinner">⏳</span>
-          ) : (
-            <>
-              <span className="checkout-icon">🛒</span>
-              <span className="checkout-text">
-                Here is my cart ({getTotalItems()} items)
+    <div className="dynamic-checkout-container">
+      <button 
+        className="dynamic-checkout-btn"
+        onClick={handleCheckoutClick}
+        disabled={isLoading}
+        title={cartUrl ? `Click to view cart page (Expires in: ${timeRemaining || 'Unknown'})` : 'Add items to cart first'}
+      >
+        {isLoading ? (
+          <span className="loading-spinner">⏳</span>
+        ) : (
+          <>
+            <span className="checkout-icon">🛒</span>
+                      <span className="checkout-text">
+            {getTotalItems()} items
+            {timeRemaining && timeRemaining !== 'Expired' && (
+              <span style={{ fontSize: '11px', display: 'block', opacity: 0.8 }}>
+                Expires in 30 days
               </span>
-            </>
-          )}
-        </button>
-        
-        {cartUrl && (
-          <button 
-            className="copy-link-btn"
-            onClick={copyCartLink}
-            title="Copy cart link"
-          >
-            📋
-          </button>
+            )}
+            {!timeRemaining && cartItems.length > 0 && (
+              <span style={{ fontSize: '11px', display: 'block', opacity: 0.8 }}>
+                Click to create cart
+              </span>
+            )}
+          </span>
+          </>
         )}
-      </div>
+      </button>
       
-      {showTooltip && (
-        <div className="tooltip">
-          Cart link copied! 📋
-        </div>
-      )}
-      
-      <div className="cart-summary">
-        <div className="summary-item">
-          <span className="summary-label">Items:</span>
-          <span className="summary-value">{getTotalItems()}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Total:</span>
-          <span className="summary-value">${getTotalPrice().toFixed(2)}</span>
-        </div>
-      </div>
-      
-      {cartId && (
-        <div className="cart-id-display">
-          <span className="cart-id-label">Cart ID:</span>
-          <span className="cart-id-value">{cartId}</span>
-        </div>
-      )}
+
     </div>
   );
 };

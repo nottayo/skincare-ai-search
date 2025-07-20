@@ -1,41 +1,19 @@
-.dynamic-checkout-widget {
+.dynamic-checkout-container {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: 32px;
   z-index: 10000;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  padding: 15px;
-  min-width: 280px;
-  max-width: 350px;
-  border: 2px solid #667eea;
-  animation: slideInUp 0.3s ease-out;
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.checkout-button-container {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .dynamic-checkout-btn {
-  flex: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  position: relative;
+  z-index: 10000;
+  background: #000000;
+  color: #fff;
+  border: 2px solid #ffffff;
   border-radius: 25px;
   padding: 12px 20px;
   font-size: 14px;
@@ -47,11 +25,13 @@
   gap: 8px;
   text-align: left;
   min-height: 45px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .dynamic-checkout-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  background: #333333;
 }
 
 .dynamic-checkout-btn:disabled {
@@ -77,6 +57,21 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes bubbleGlow {
+  0% {
+    box-shadow: 
+      0 0 20px rgba(0, 102, 255, 0.6),
+      0 0 40px rgba(0, 102, 255, 0.4),
+      0 0 60px rgba(0, 102, 255, 0.2);
+  }
+  100% {
+    box-shadow: 
+      0 0 30px rgba(0, 102, 255, 0.8),
+      0 0 60px rgba(0, 102, 255, 0.6),
+      0 0 90px rgba(0, 102, 255, 0.4);
+  }
 }
 
 .copy-link-btn {
@@ -162,17 +157,16 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .dynamic-checkout-widget {
-    right: 10px;
-    bottom: 10px;
-    left: 10px;
-    max-width: none;
-    min-width: auto;
+  .dynamic-checkout-container {
+    right: 16px;
+    bottom: 16px;
   }
   
-  .checkout-button-container {
-    flex-direction: column;
-    gap: 8px;
+  .dynamic-checkout-btn {
+    padding: 7px 12px;
+    font-size: 13px;
+    min-width: 80px;
+    max-width: 180px;
   }
   
   .copy-link-btn {
@@ -185,9 +179,27 @@
   }
 }
 
+
+
+/* Small screen adjustments */
+@media (max-width: 480px) {
+  .dynamic-checkout-container {
+    right: 12px;
+    bottom: 16px;
+  }
+  
+  .dynamic-checkout-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+    min-height: 40px;
+    min-width: 70px;
+    max-width: 160px;
+  }
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .dynamic-checkout-widget {
+  .dynamic-checkout-btn {
     background: #2d3748;
     border-color: #667eea;
     color: white;
@@ -218,7 +230,7 @@
 }
 
 /* Animation for cart updates */
-.dynamic-checkout-widget.cart-updated {
+.dynamic-checkout-btn.cart-updated {
   animation: pulse 0.5s ease-in-out;
 }
 
@@ -229,7 +241,7 @@
 }
 
 /* Hover effects for better UX */
-.dynamic-checkout-widget:hover {
+.dynamic-checkout-btn:hover {
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
   transition: all 0.3s ease;

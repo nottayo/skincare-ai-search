@@ -1,3 +1,4 @@
+question,category,active,answer,date,time,ip,browser,os,device,unknown1,unknown2
 soap,product_search,True,Crafted with ancient Moroccan beauty rituals for a luxurious experience,2025-07-16,21:08,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 best soap for ligt skin,product_search,True,Formulated with alpha arbutin for skin-brightening properties and combating dark spots,2025-07-16,21:08,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 body wahs,product_search,True,Ultimate grooming essential for the modern man who demands freshness and confidence. Invigorating sensations with every shower.,2025-07-16,21:12,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
@@ -149,20 +150,20 @@ how do i order?,product_search,True,"To place an order for the roll-on products,
 
 1. Visit the website of you",2025-07-17,02:04,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 how can i order,product_search,True,"If you're looking to make a statement with your fragrance, I recommend the 212 VIP Men Wild Party. T",2025-07-17,02:07,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-body wash,chat,True,"I’m sorry, I couldn’t find that in our catalog.
+body wash,chat,True,"I'm sorry, I couldn't find that in our catalog.
 
 Please call 08189880899 or 08037133704, email info@",2025-07-17,02:10,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-where are you located,chat,True,"I’m sorry, I couldn’t find that in our catalog.
+where are you located,chat,True,"I'm sorry, I couldn't find that in our catalog.
 
 Please call 08189880899 or 08037133704, email info@",2025-07-17,02:11,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-body wahs,chat,True,"I’m sorry, I couldn’t find that in our catalog.
+body wahs,chat,True,"I'm sorry, I couldn't find that in our catalog.
 
 Please call 08189880899 or 08037133704, email info@",2025-07-17,02:12,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 soap,product_search,True,Hey there! I recommend checking out the 55H+ Performance Bar Soap from MamaTega. This soap is design,2025-07-17,02:16,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-do you carry olay,chat,True,"I’m sorry, I couldn’t find that in our catalog.
+do you carry olay,chat,True,"I'm sorry, I couldn't find that in our catalog.
 
 Please call us at 08189880899 or 08037133704, email",2025-07-17,02:17,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-55h+?,chat,True,"I’m sorry, I couldn’t find that in our catalog.
+55h+?,chat,True,"I'm sorry, I couldn't find that in our catalog.
 
 Please call us at 08189880899 or 08037133704, email",2025-07-17,02:17,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 soap?,product_search,True,"Sorry, something went wrong. Please try again later.",2025-07-17,02:17,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
@@ -218,8 +219,8 @@ brar soap,product_search,True,"Certainly! Here is a great option for a bar soap 
 55H+ Performance Bar Soap (https://",2025-07-17,02:55,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 any other brand?,chat,True,"Sure! Another popular bar soap brand we have is:
 Alpha Arbutin Soap (https://mamatega.myshopify.com/",2025-07-17,02:56,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-What are your delivery options?,chat,True,"Sorry, I couldn’t process that. Please try again.",2025-07-17,03:00,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
-soap,product_search,True,"Sorry, I couldn’t process that. Please try again.",2025-07-17,03:00,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
+What are your delivery options?,chat,True,"Sorry, I couldn't process that. Please try again.",2025-07-17,03:00,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
+soap,product_search,True,"Sorry, I couldn't process that. Please try again.",2025-07-17,03:00,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 What are your delivery options?,chat,True,"Oh, I'm so glad you asked! At MamaTega, we offer a variety of delivery options to make sure you get ",2025-07-17,03:45,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 hand soap,product_search,True,"Ah, hand soap, a true essential in any home! We have some fantastic options available at MamaTega to",2025-07-17,03:46,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
 body wash,chat,True,"Ah, the soothing ritual of washing away the day's worries with a luxurious body wash! At MamaTega, w",2025-07-17,03:50,127.0.0.1,Chrome,Mac OS X,Mac,False,Mac
