@@ -100,6 +100,9 @@ export default function Chatbot() {
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
 
+  // Add helpPromptSent state
+  const [helpPromptSent, setHelpPromptSent] = useState(false);
+
   // Cart checking function - moved outside useEffect for global access
   // Cart checking function - optimized to prevent excessive calls
   const checkCart = () => {
@@ -585,6 +588,7 @@ export default function Chatbot() {
   const handleKey = e => e.key === 'Enter' && sendMessage();
 
   const clearChat = () => {
+    if (!window.confirm('Are you sure you want to clear the chat history? This cannot be undone.')) return;
     // Save current conversation to history before clearing
     if (messages.length > 1) {
       const conversation = {
@@ -612,6 +616,7 @@ export default function Chatbot() {
     setUserHasInteracted(false);
     setCartItemsAdded([]);
     setLastCartUpdateTime(null);
+    setHelpPromptSent(false); // Reset help prompt for new chat
     // Remove the user label from user message bubbles
   };
 
@@ -835,7 +840,7 @@ export default function Chatbot() {
 
   // Function to send inactivity prompts
   const sendInactivityPrompt = () => {
-    if (!userHasInteracted) return;
+    if (!userHasInteracted || helpPromptSent) return;
     if (messages.some(m => m.isInactivityPrompt)) return;
     const inactivityPrompts = [
       "Need help choosing? Try asking 'What's good for acne?' or 'Which moisturizer is best?' ✨"
@@ -850,6 +855,7 @@ export default function Chatbot() {
         isInactivityPrompt: true
       }
     ]);
+    setHelpPromptSent(true);
   };
 
   // Cleanup timeout on unmount
