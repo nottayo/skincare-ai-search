@@ -25,7 +25,7 @@ if ! aws sts get-caller-identity &> /dev/null; then
 fi
 
 # S3 bucket name (update this to your bucket name)
-S3_BUCKET="mamatega-embeddings"
+S3_BUCKET="my-embeddings-bucket-ds3"
 
 # Check if bucket exists
 if ! aws s3 ls "s3://$S3_BUCKET" &> /dev/null; then

@@ -74,13 +74,13 @@ const DynamicCheckout = () => {
     
     setIsLoading(true);
     try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost ? 'http://localhost:5001/api/cart/create' : `http://${window.location.hostname}:5001/api/cart/create`;
+      // Replace all API_URL logic with hardcoded Vercel backend URL
+      const CART_API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create';
       
       // Get existing cart ID from localStorage
       const existingCartId = localStorage.getItem('mamatega_cart_id');
       
-      const response = await fetch(API_URL, {
+      const response = await fetch(CART_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,9 +100,8 @@ const DynamicCheckout = () => {
       if (response.ok) {
         const cartData = await response.json();
         setCartId(cartData.cart_id);
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const backendUrl = isLocalhost ? 'http://localhost:5001' : `http://${window.location.hostname}:5001`;
-        const fullCartUrl = `${backendUrl}/cart/${cartData.cart_id}`;
+        // When setting cartUrl, use the Vercel backend URL
+        const fullCartUrl = `https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/cart/${cartData.cart_id}`;
         setCartUrl(fullCartUrl);
         
         // Store cart ID in localStorage for persistence

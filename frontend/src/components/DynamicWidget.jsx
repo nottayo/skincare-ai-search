@@ -43,8 +43,8 @@ const DynamicWidget = ({ onCartUpdate }) => {
     
     setIsLoading(true);
     try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost ? 'http://localhost:5001/api/cart/create' : `http://${window.location.hostname}:5001/api/cart/create`;
+      // Replace all API_URL logic with hardcoded Vercel backend URL
+      const CART_API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create';
       
       // Use existing cart ID if available, otherwise create new one
       const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
@@ -94,8 +94,8 @@ const DynamicWidget = ({ onCartUpdate }) => {
         };
       }));
       
-      const response = await fetch(API_URL.replace('/create', endpoint), {
-        method: method,
+      const response = await fetch(CART_API_URL, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -128,7 +128,7 @@ const DynamicWidget = ({ onCartUpdate }) => {
             items: enhancedItems,
             totalItems: getTotalItems(),
             totalPrice: getTotalPrice(),
-            cartUrl: `${window.location.origin}/cart/${finalCartId}`
+            cartUrl: `https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/cart/${finalCartId}`
           });
         }
       }

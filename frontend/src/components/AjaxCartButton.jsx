@@ -50,8 +50,8 @@ const AjaxCartButton = ({
     
     setIsLoading(true);
     try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost ? 'http://localhost:5001/api/cart/create' : `http://${window.location.hostname}:5001/api/cart/create`;
+      // Replace all API_URL logic with hardcoded Vercel backend URL
+      const CART_API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create';
       
       // Use existing cart ID if available, otherwise create new one
       const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
@@ -101,8 +101,8 @@ const AjaxCartButton = ({
         };
       }));
       
-      const response = await fetch(API_URL.replace('/create', endpoint), {
-        method: method,
+      const response = await fetch(CART_API_URL, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -124,9 +124,9 @@ const AjaxCartButton = ({
           setCartId(cartData.cart_id);
         }
         
+        // When setting cartUrl, use the Vercel backend URL
         const finalCartId = cartId || cartData.cart_id;
-        // Use URL-based cart ID for public sharing
-        const fullCartUrl = `${window.location.origin}/cart/${finalCartId}`;
+        const fullCartUrl = `https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/cart/${finalCartId}`;
         setCartUrl(fullCartUrl);
       }
     } catch (error) {

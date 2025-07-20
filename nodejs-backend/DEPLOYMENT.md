@@ -23,8 +23,8 @@ SHOPIFY_STORE_URL=shopmamatega.com
 SHOPIFY_ADMIN_API=your_shopify_admin_token_here
 SHOPIFY_STOREFRONT_TOKEN=your_shopify_storefront_token_here
 
-# S3 Configuration for Embeddings
-EMBEDS_PATH=s3://mamatega-embeddings/product_embeddings_with_brands.json
+# S3 Configuration for Embeddings (UPDATED WITH YOUR BUCKET)
+EMBEDS_PATH=s3://my-embeddings-bucket-ds3/product_embeddings_with_brands.json
 AWS_ACCESS_KEY_ID=your_aws_access_key_here
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
 S3_REGION=us-east-2
@@ -41,12 +41,18 @@ PORT=5001
 
 ## 🚀 Deployment Steps
 
-### 1. Navigate to Backend Directory
+### 1. Login to Vercel
+```bash
+vercel login
+# Choose your preferred login method (GitHub, Google, etc.)
+```
+
+### 2. Navigate to Backend Directory
 ```bash
 cd nodejs-backend
 ```
 
-### 2. Set Environment Variables in Vercel
+### 3. Set Environment Variables in Vercel
 ```bash
 # Set each environment variable
 vercel env add OPENAI_API_KEY
@@ -58,12 +64,12 @@ vercel env add S3_REGION
 vercel env add EMBEDS_PATH
 ```
 
-### 3. Deploy to Vercel
+### 4. Deploy to Vercel
 ```bash
-vercel --prod
+vercel --prod --yes
 ```
 
-### 4. Verify Deployment
+### 5. Verify Deployment
 - Check the deployment URL (e.g., `https://your-app.vercel.app`)
 - Test the health endpoint: `https://your-app.vercel.app/health`
 - Test the chat endpoint: `https://your-app.vercel.app/ask`
@@ -109,7 +115,7 @@ If you encounter issues:
 ## 🎉 Success!
 
 Once deployed, your Node.js backend will be running on Vercel with:
-- ✅ S3-powered embeddings loading
+- ✅ S3-powered embeddings loading from `s3://my-embeddings-bucket-ds3/`
 - ✅ Shopify integration
 - ✅ OpenAI chat functionality
 - ✅ Cart management system

@@ -48,6 +48,8 @@ function getRandomSuggestions() {
   return picked;
 }
 
+const STATIC_WELCOME_MESSAGE = "Welcome to MamaTega Cosmetics! How can I help you today?";
+
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState(null);
@@ -384,7 +386,7 @@ export default function Chatbot() {
     if (messages.length === 0) {
       setMessages([{
         type: 'bot',
-        text: getRandomWelcomeMessage(),
+        text: STATIC_WELCOME_MESSAGE,
         time: timeStamp()
       }]);
     }
@@ -597,7 +599,7 @@ export default function Chatbot() {
     setSessionId(null);
     setMessages([{
       type: 'bot',
-      text: getRandomWelcomeMessage(),
+      text: STATIC_WELCOME_MESSAGE,
       time: timeStamp()
     }]);
     setSuggestions(getRandomSuggestions());
@@ -686,12 +688,7 @@ export default function Chatbot() {
   const updateExistingCartMessage = async (cartItems, newItems = []) => {
     try {
       // Create or update cart page
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost
-        ? 'http://localhost:5001/api/cart/create'
-        : `http://${window.location.hostname}:5001/api/cart/create`;
-      
-      const response = await fetch(API_URL, {
+      const response = await fetch('https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -838,21 +835,12 @@ export default function Chatbot() {
 
   // Function to send inactivity prompts
   const sendInactivityPrompt = () => {
+    if (!userHasInteracted) return;
+    if (messages.some(m => m.isInactivityPrompt)) return;
     const inactivityPrompts = [
-      "Ask me any question about products! Like 'Does this work for my skin?' or 'Is this foundation good?' 💁‍♀️",
-      "Need help choosing? Try asking 'What's good for acne?' or 'Which moisturizer is best?' ✨",
-      "Curious about a product? Ask me 'Does this serum work?' or 'Is this cleanser gentle?' 🤔",
-      "Want recommendations? Try 'What's good for dry skin?' or 'Which sunscreen is best?' 🌟",
-      "Have questions? Ask 'Does this help with wrinkles?' or 'Is this good for sensitive skin?' 💫",
-      "Need advice? Try 'What's good for oily skin?' or 'Which toner should I use?' 💎",
-      "Wondering about products? Ask 'Does this help with dark spots?' or 'Is this good for combination skin?' ✨",
-      "Looking for help? Try 'What's good for mature skin?' or 'Which mask is best?' 🌸",
-      "Need guidance? Ask 'Does this help with redness?' or 'Is this good for normal skin?' 💖",
-      "Want suggestions? Try 'What's good for blemishes?' or 'Which eye cream works?' 🎯"
+      "Need help choosing? Try asking 'What's good for acne?' or 'Which moisturizer is best?' ✨"
     ];
-    
-    const randomPrompt = inactivityPrompts[Math.floor(Math.random() * inactivityPrompts.length)];
-    
+    const randomPrompt = inactivityPrompts[0];
     setMessages(m => [
       ...m,
       {
@@ -983,11 +971,7 @@ export default function Chatbot() {
     let answer = '', results = [], view_all_link = '', newSugs = [], whatsappUrl = '';
 
     // Determine backend API URL based on environment
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    // Use Render backend for production
-    const API_URL = isLocalhost
-      ? 'http://localhost:5001/ask'
-                : `http://${window.location.hostname}:5001/ask`;
+    const API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/ask';
 
     const history = messages.slice(-15).map(msg => ({
       role: msg.type === 'user' ? 'user' : 'assistant',

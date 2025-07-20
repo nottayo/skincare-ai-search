@@ -13979,3 +13979,5 @@
 [2025-07-20T06:46:15.818Z] [ANALYTICS] request {"method":"GET","url":"/cart/NG1752992717707kbv1p9","status":404,"duration":106,"ip":"::ffff:10.0.0.141","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 [2025-07-20T06:59:44.042Z] [INFO] POST /ask 200 663ms
 [2025-07-20T06:59:44.042Z] [ANALYTICS] request {"method":"POST","url":"/ask","status":200,"duration":663,"ip":"::ffff:10.0.0.141","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+[2025-07-20T08:01:04.721Z] [INFO] GET /cart/NG175299193480360bdjm 404 18ms
+[2025-07-20T08:01:04.725Z] [ANALYTICS] request {"method":"GET","url":"/cart/NG175299193480360bdjm","status":404,"duration":18,"ip":"::ffff:10.0.0.11","userAgent":"Mozilla/5.0 (iPhone; CPU iPhone OS 19_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1"}
