@@ -58,15 +58,29 @@ loadCartsFromStorage();
 
 // Middleware
 const allowedOrigins = [
-  'https://frontend-rdd6a89c2-tayos-projects-cec8e285.vercel.app',
-  'http://localhost:3000', // for local dev
+  'https://frontend-ddxx6bhas-tayos-projects-cec8e285.vercel.app',
+  'http://localhost:3000'
 ];
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Cache-Control', 'Expires', 'Pragma'],
-}));
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
+  if (req.method === 'OPTIONS') {
+    res.status(204)
+      .setHeader('Access-Control-Allow-Origin', allowOrigin)
+      .setHeader('Vary', 'Origin')
+      .setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+      .setHeader('Access-Control-Allow-Headers', 'Content-Type, Cache-Control, Expires, Pragma, Authorization')
+      .setHeader('Access-Control-Max-Age', '86400')
+      .end();
+    return;
+  }
+
+  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  res.setHeader('Vary', 'Origin');
+  next();
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -1396,3 +1410,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`🚀 Node.js MamaTega Cosmetics AI Backend running on port ${PORT}`);
 }); 
+

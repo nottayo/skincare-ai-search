@@ -120,3 +120,4 @@ Once deployed, your Node.js backend will be running on Vercel with:
 - ✅ OpenAI chat functionality
 - ✅ Cart management system
 - ✅ All MamaTega branding 
+

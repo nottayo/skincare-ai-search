@@ -77,3 +77,4 @@ app.listen(PORT, () => {
     console.log(`🛒 Cart endpoint: POST http://localhost:${PORT}/api/cart/create`);
     console.log(`📊 Get cart: GET http://localhost:${PORT}/api/cart/:cartId`);
 }); 
+
