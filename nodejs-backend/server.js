@@ -57,30 +57,39 @@ const processStartTime = Date.now();
 loadCartsFromStorage();
 
 // Middleware
-const allowedOrigins = [
-  'https://frontend-ddxx6bhas-tayos-projects-cec8e285.vercel.app',
-  'https://chatbot-widget-frontend-eed49kk6p-tayos-projects-cec8e285.vercel.app',
+const ALLOWED_ORIGINS = [
   'https://shopmamatega.com',
+  'https://frontend-ddxx6bhas-tayos-projects-cec8e285.vercel.app',
   'http://localhost:3000'
 ];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
 
-  if (req.method === 'OPTIONS') {
-    res.status(204)
-      .setHeader('Access-Control-Allow-Origin', allowOrigin)
-      .setHeader('Vary', 'Origin')
-      .setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-      .setHeader('Access-Control-Allow-Headers', 'Content-Type, Cache-Control, Expires, Pragma, Authorization')
-      .setHeader('Access-Control-Max-Age', '86400')
-      .end();
-    return;
+  // Reject unknown origins
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return req.method === 'OPTIONS'
+      ? res.status(403).end()
+      : res.status(403).json({ error: 'Origin not allowed' });
   }
 
-  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  // Whitelisted origin → set headers
+  if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Vary', 'Origin');
+
+  // Short-circuit pre-flight
+  if (req.method === 'OPTIONS') {
+    return res
+      .status(204)
+      .setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+      .setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Cache-Control, Expires, Pragma, Authorization'
+      )
+      .setHeader('Access-Control-Max-Age', '86400') // 24 h
+      .end();
+  }
+
   next();
 });
 app.use(bodyParser.json());
