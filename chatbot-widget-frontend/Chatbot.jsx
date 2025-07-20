@@ -693,7 +693,7 @@ export default function Chatbot() {
   const updateExistingCartMessage = async (cartItems, newItems = []) => {
     try {
       // Create or update cart page
-      const response = await fetch(`https://nodejs-backend-n94wv39m9-tayos-projects-cec8e285.vercel.app/api/cart/create`, {
+      const response = await fetch(`https://nodejs-backend-7lf8cy2q1-tayos-projects-cec8e285.vercel.app/api/cart/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -980,7 +980,7 @@ export default function Chatbot() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_BASE = isLocal
       ? 'http://localhost:5001'
-      : 'https://nodejs-backend-n94wv39m9-tayos-projects-cec8e285.vercel.app';
+      : 'https://nodejs-backend-7lf8cy2q1-tayos-projects-cec8e285.vercel.app';
     const API_URL = `${API_BASE}/ask`;
 
     const history = messages.slice(-15).map(msg => ({
