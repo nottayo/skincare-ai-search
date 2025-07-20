@@ -46,3 +46,5 @@ app.listen(PORT, () => {
     console.log(`💬 Chat endpoint: POST http://localhost:${PORT}/ask`);
     console.log(`🛒 Cart endpoint: POST http://localhost:${PORT}/api/cart/create`);
 }); 
+
+

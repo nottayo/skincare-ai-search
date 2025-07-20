@@ -62,3 +62,5 @@ export default function handler(req, res) {
 2. **Deploy to Vercel**
 3. **Update cart button URLs**
 4. **Save money!** 💰 
+
+

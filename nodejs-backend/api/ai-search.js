@@ -109,3 +109,4 @@ async function searchProducts(query) {
   return filteredProducts;
 } 
 
+

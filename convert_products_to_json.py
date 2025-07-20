@@ -233,3 +233,4 @@ if __name__ == "__main__":
     print("  2. Update the backend to use the new embeddings file")
     print("  3. Test the improved product search functionality") 
 
+

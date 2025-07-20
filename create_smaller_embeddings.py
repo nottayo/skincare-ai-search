@@ -92,3 +92,5 @@ if __name__ == "__main__":
     
     print("\n🎉 Smaller embeddings file created!")
     print("💡 This should resolve the memory issue in Node.js") 
+
+
