@@ -109,3 +109,9 @@ celerybeat-schedule
 .mypy_cache/
 .dmypy.json
 dmypy.json
+nodejs-backend/product_embeddings.json
+nodejs-backend/product_embeddings_small.json
+nodejs-backend/product_embeddings_with_brands.json
+product_embeddings.json
+product_embeddings_small.json
+product_embeddings_with_brands.json

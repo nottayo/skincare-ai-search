@@ -203,3 +203,4 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = { initDynamicCheckout: window.initDynamicCheckout };
 }
 //# sourceMappingURL=dynamic-checkout-widget.mjs.map
+
