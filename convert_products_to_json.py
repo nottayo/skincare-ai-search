@@ -232,3 +232,4 @@ if __name__ == "__main__":
     print("  1. Review the brand extraction in products_with_brands.json")
     print("  2. Update the backend to use the new embeddings file")
     print("  3. Test the improved product search functionality") 
+

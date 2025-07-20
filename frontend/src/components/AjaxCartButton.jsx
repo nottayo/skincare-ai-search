@@ -20,6 +20,7 @@ const AjaxCartButton = ({
       fetch('/cart.js')
         .then(res => res.json())
         .then(cart => {
+          console.log('[AjaxCartButton] /cart.js response:', cart);
           const currentCartItems = cart.items || [];
           setCartItems(currentCartItems);
           
@@ -32,7 +33,7 @@ const AjaxCartButton = ({
           }
         })
         .catch(error => {
-          console.error('Error fetching cart:', error);
+          console.error('[AjaxCartButton] Error fetching cart:', error);
         });
     };
 
@@ -137,8 +138,11 @@ const AjaxCartButton = ({
   };
 
   const handleClick = () => {
+    console.log('[AjaxCartButton] handleClick fired. cartUrl:', cartUrl);
     if (cartUrl) {
       window.open(cartUrl, '_blank');
+    } else {
+      console.warn('[AjaxCartButton] No cartUrl set, nothing to open.');
     }
   };
 
@@ -164,6 +168,7 @@ const AjaxCartButton = ({
 
   // Don't render if no items in cart
   if (cartItems.length === 0) {
+    console.log('[AjaxCartButton] No items in cart, button will not render.');
     return null;
   }
 
@@ -177,7 +182,10 @@ const AjaxCartButton = ({
         disabled={isLoading || !cartUrl}
       >
         {isLoading ? (
-          <span className="loading-spinner">⏳</span>
+          <>
+            <span className="loading-spinner">⏳</span>
+            <span className="loading-text">Generating your cart link... This may take a few minutes.</span>
+          </>
         ) : (
           <>
             <span className="cart-icon">🛒</span>
@@ -187,7 +195,9 @@ const AjaxCartButton = ({
           </>
         )}
       </button>
-      
+      {isLoading && (
+        <div className="loading-message">Generating your cart link... This may take a few minutes if you have many items.</div>
+      )}
       {showTooltip && (
         <div className="tooltip">
           Cart link copied! 📋
@@ -198,3 +208,4 @@ const AjaxCartButton = ({
 };
 
 export default AjaxCartButton; 
+

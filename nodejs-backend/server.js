@@ -57,7 +57,16 @@ const processStartTime = Date.now();
 loadCartsFromStorage();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'https://frontend-rdd6a89c2-tayos-projects-cec8e285.vercel.app',
+  'http://localhost:3000', // for local dev
+];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Cache-Control', 'Expires', 'Pragma'],
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

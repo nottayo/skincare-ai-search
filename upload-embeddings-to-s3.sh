@@ -83,3 +83,4 @@ for file in "${FILES[@]}"; do
         echo "   $file: https://$S3_BUCKET.s3.$REGION.amazonaws.com/$file"
     fi
 done 
+

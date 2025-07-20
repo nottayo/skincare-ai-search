@@ -239,3 +239,4 @@ Once deployed, your MamaTega Cosmetics AI system will be live with:
 - Share cart links with others
 - Order via Instagram
 - View cart details on mobile-friendly pages 
+

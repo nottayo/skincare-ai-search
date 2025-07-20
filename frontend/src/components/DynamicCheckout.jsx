@@ -22,8 +22,7 @@ const DynamicCheckout = () => {
     // Load existing cart URL and update it to use backend URL
     const existingCartId = localStorage.getItem('mamatega_cart_id');
     if (existingCartId) {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const backendUrl = isLocalhost ? 'http://localhost:5001' : `http://${window.location.hostname}:5001`;
+      const backendUrl = 'https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app';
       const fullCartUrl = `${backendUrl}/cart/${existingCartId}`;
       setCartUrl(fullCartUrl);
       setCartId(existingCartId);
@@ -181,3 +180,4 @@ const DynamicCheckout = () => {
 };
 
 export default DynamicCheckout; 
+

@@ -36,3 +36,4 @@
   document.getElementById('CartTabBtn').onclick = showCart;
   document.getElementById('ChatTabBtn').onclick = showChat;
 </script>
+

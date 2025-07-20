@@ -8,3 +8,4 @@ window.renderMamaTegaChatbot = function(targetId = 'ChatbotWidget') {
     createRoot(container).render(<Chatbot />);
   }
 }; 
+

@@ -45,7 +45,26 @@ async function listBrands(limit = 20) {
   return brands.slice(0, limit);
 }
 
+// Simple in-memory cache for product details
+const productCache = {};
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+function getCachedProduct(handle) {
+  const entry = productCache[handle];
+  if (entry && (Date.now() - entry.timestamp < CACHE_TTL)) {
+    return entry.data;
+  }
+  return null;
+}
+
+function setCachedProduct(handle, data) {
+  productCache[handle] = { data, timestamp: Date.now() };
+}
+
 async function getProductByHandle(handle) {
+  // Check cache first
+  const cached = getCachedProduct(handle);
+  if (cached) return cached;
   const gql = `{
     productByHandle(handle: "${handle}") {
       id
@@ -59,6 +78,7 @@ async function getProductByHandle(handle) {
     }
   }`;
   const data = await shopifyGraphQL(gql);
+  setCachedProduct(handle, data.productByHandle);
   return data.productByHandle;
 }
 
