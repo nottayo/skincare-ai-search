@@ -246,7 +246,7 @@ app.post('/ask', async (req, res) => {
     const sessionKey = sessionId || chatId || 'default';
     const products = await require('./chat-reasoning').productsPromise;
     const { loadChatHistory, saveChatHistory, loadUserProfile, saveUserProfile } = require('./utils');
-    let userProfile = loadUserProfile(sessionKey); // Ensure userProfile is always defined early
+    let userProfile = await loadUserProfile(sessionKey); // Ensure userProfile is always defined early
     // Helper to get unique brands
     function getUniqueBrands(products, limit = 20) {
       const brandSet = new Set();
@@ -415,7 +415,14 @@ Only mention each product once in your answer. Do NOT repeat the product list af
       console.log(`[DEBUG] Product list being sent to AI:\n${productList}`);
     }
     // Persistent chat history
-    let storedHistory = Array.isArray(loadChatHistory(sessionKey)) ? loadChatHistory(sessionKey) : [];
+    let storedHistory = [];
+    try {
+      const loadedHistory = await loadChatHistory(sessionKey);
+      storedHistory = Array.isArray(loadedHistory) ? loadedHistory : [];
+    } catch (e) {
+      console.warn('[ASK] Failed to load chat history:', e.message);
+      storedHistory = [];
+    }
     let updatedHistory = [];
     if (Array.isArray(history) && history.length > storedHistory.length) {
       updatedHistory = [...history];
@@ -498,7 +505,11 @@ Only mention each product once in your answer. Do NOT repeat the product list af
     }
     // After getting the bot's answer:
     updatedHistory.push({ role: 'assistant', content: answer });
-    saveChatHistory(sessionKey, updatedHistory);
+    try {
+      await saveChatHistory(sessionKey, updatedHistory);
+    } catch (e) {
+      console.warn('[ASK] Failed to save chat history:', e.message);
+    }
     // 6. Return the AI’s answer, merged product results (only for product queries), and updated history
     res.json({
       answer,

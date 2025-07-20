@@ -4,7 +4,7 @@ const csvParse = require('csv-parse/sync');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const csvWriter = require('csv-writer').createObjectCsvWriter;
 const CHAT_LOGS_FILE = path.join(__dirname, '../backend/chat_logs.csv');
-const CHAT_HISTORY_FILE = path.join(__dirname, '../backend/chat_history.json');
+const CHAT_HISTORY_FILE = path.join(__dirname, 'chat_history.json');
 
 const S3_BUCKET = process.env.S3_BUCKET || 'mamatega-chat-logs';
 const S3_REGION = process.env.S3_REGION || 'us-east-1';
@@ -355,56 +355,68 @@ function extractBrandName(userQ, brands) {
   return null;
 }
 
-function loadChatHistory(sessionId) {
+async function loadChatHistory(sessionId) {
   let allHistory = {};
-  if (fs.existsSync(CHAT_HISTORY_FILE)) {
-    try {
-      allHistory = JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, 'utf-8'));
-    } catch (e) {
-      allHistory = {};
+  try {
+    if (await fs.pathExists(CHAT_HISTORY_FILE)) {
+      allHistory = await fs.readJson(CHAT_HISTORY_FILE);
     }
+  } catch (e) {
+    console.warn('[CHAT] Failed to load chat history:', e.message);
+    allHistory = {};
   }
   return allHistory[sessionId] || [];
 }
 
-function saveChatHistory(sessionId, history) {
+async function saveChatHistory(sessionId, history) {
   let allHistory = {};
-  if (fs.existsSync(CHAT_HISTORY_FILE)) {
-    try {
-      allHistory = JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, 'utf-8'));
-    } catch (e) {
-      allHistory = {};
+  try {
+    if (await fs.pathExists(CHAT_HISTORY_FILE)) {
+      allHistory = await fs.readJson(CHAT_HISTORY_FILE);
     }
+  } catch (e) {
+    console.warn('[CHAT] Failed to load existing chat history:', e.message);
+    allHistory = {};
   }
   allHistory[sessionId] = history;
-  fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(allHistory, null, 2), 'utf-8');
+  try {
+    await fs.writeJson(CHAT_HISTORY_FILE, allHistory, { spaces: 2 });
+  } catch (e) {
+    console.warn('[CHAT] Failed to save chat history:', e.message);
+  }
 }
 
-const USER_PROFILE_FILE = path.join(__dirname, '../backend/user_profiles.json');
+const USER_PROFILE_FILE = path.join(__dirname, 'user_profiles.json');
 
-function loadUserProfile(sessionId) {
+async function loadUserProfile(sessionId) {
   let allProfiles = {};
-  if (fs.existsSync(USER_PROFILE_FILE)) {
-    try {
-      allProfiles = JSON.parse(fs.readFileSync(USER_PROFILE_FILE, 'utf-8'));
-    } catch (e) {
-      allProfiles = {};
+  try {
+    if (await fs.pathExists(USER_PROFILE_FILE)) {
+      allProfiles = await fs.readJson(USER_PROFILE_FILE);
     }
+  } catch (e) {
+    console.warn('[PROFILE] Failed to load user profile:', e.message);
+    allProfiles = {};
   }
   return allProfiles[sessionId] || {};
 }
 
-function saveUserProfile(sessionId, profile) {
+async function saveUserProfile(sessionId, profile) {
   let allProfiles = {};
-  if (fs.existsSync(USER_PROFILE_FILE)) {
-    try {
-      allProfiles = JSON.parse(fs.readFileSync(USER_PROFILE_FILE, 'utf-8'));
-    } catch (e) {
-      allProfiles = {};
+  try {
+    if (await fs.pathExists(USER_PROFILE_FILE)) {
+      allProfiles = await fs.readJson(USER_PROFILE_FILE);
     }
+  } catch (e) {
+    console.warn('[PROFILE] Failed to load existing user profiles:', e.message);
+    allProfiles = {};
   }
   allProfiles[sessionId] = profile;
-  fs.writeFileSync(USER_PROFILE_FILE, JSON.stringify(allProfiles, null, 2), 'utf-8');
+  try {
+    await fs.writeJson(USER_PROFILE_FILE, allProfiles, { spaces: 2 });
+  } catch (e) {
+    console.warn('[PROFILE] Failed to save user profile:', e.message);
+  }
 }
 
 module.exports = {
