@@ -51,8 +51,13 @@ const AjaxCartButton = ({
     
     setIsLoading(true);
     try {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const backendUrl = isLocal
+        ? 'http://localhost:5001'
+        : 'https://nodejs-backend-i0tlrhknz-tayos-projects-cec8e285.vercel.app';
+      
       // Replace all API_URL logic with hardcoded Vercel backend URL
-      const CART_API_URL = 'https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/api/cart/create';
+      const CART_API_URL = `${backendUrl}/api/cart/create`;
       
       // Use existing cart ID if available, otherwise create new one
       const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
@@ -127,7 +132,7 @@ const AjaxCartButton = ({
         
         // When setting cartUrl, use the Vercel backend URL
         const finalCartId = cartId || cartData.cart_id;
-        const fullCartUrl = `https://nodejs-backend-h8mygbapi-tayos-projects-cec8e285.vercel.app/cart/${finalCartId}`;
+        const fullCartUrl = `${backendUrl}/cart/${finalCartId}`;
         setCartUrl(fullCartUrl);
       }
     } catch (error) {
@@ -208,4 +213,5 @@ const AjaxCartButton = ({
 };
 
 export default AjaxCartButton; 
+
 

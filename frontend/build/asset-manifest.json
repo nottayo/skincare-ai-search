@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.242a403c.css",
-    "main.js": "/static/js/main.c334f367.js",
-    "static/media/Pacifico-Light.otf": "/static/media/Pacifico-Light.3e1a56c5ebe6c8c9d73d.otf",
-    "static/media/FivoSans-Light.otf": "/static/media/FivoSans-Light.2545b4c840e15487c77d.otf",
-    "static/media/CraftworkGrotesk-Bold.otf": "/static/media/CraftworkGrotesk-Bold.1c755a280fcac9415c95.otf",
-    "static/media/CraftworkGrotesk-Medium.otf": "/static/media/CraftworkGrotesk-Medium.fc4234826863e1e630a3.otf",
-    "static/media/workb.otf": "/static/media/workb.00b060ad2e85bd112c61.otf",
+    "main.css": "/static/css/main.5ce24589.css",
+    "main.js": "/static/js/main.7b0711d2.js",
+    "static/media/Pacifico-Light.otf": "/static/media/Pacifico-Light.63321ee49dd5224c219a.otf",
+    "static/media/FivoSans-Light.otf": "/static/media/FivoSans-Light.c8edc0ecb59eb5329d5a.otf",
+    "static/media/CraftworkGrotesk-Bold.otf": "/static/media/CraftworkGrotesk-Bold.385275ddd110131e76ad.otf",
+    "static/media/CraftworkGrotesk-Medium.otf": "/static/media/CraftworkGrotesk-Medium.e50d24c0497eb2f7a3e5.otf",
+    "static/media/workb.otf": "/static/media/workb.29ddeeeadde5af62fbfd.otf",
     "index.html": "/index.html",
-    "main.242a403c.css.map": "/static/css/main.242a403c.css.map",
-    "main.c334f367.js.map": "/static/js/main.c334f367.js.map"
+    "main.5ce24589.css.map": "/static/css/main.5ce24589.css.map",
+    "main.7b0711d2.js.map": "/static/js/main.7b0711d2.js.map"
   },
   "entrypoints": [
-    "static/css/main.242a403c.css",
-    "static/js/main.c334f367.js"
+    "static/css/main.5ce24589.css",
+    "static/js/main.7b0711d2.js"
   ]
 }

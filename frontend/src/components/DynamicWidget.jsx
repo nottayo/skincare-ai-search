@@ -43,8 +43,13 @@ const DynamicWidget = ({ onCartUpdate }) => {
     
     setIsLoading(true);
     try {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const backendUrl = isLocal
+        ? 'http://localhost:5001'
+        : 'https://nodejs-backend-i0tlrhknz-tayos-projects-cec8e285.vercel.app';
+      
       // Set CART_API_URL to Vercel backend
-      const CART_API_URL = 'https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/api/cart/create';
+      const CART_API_URL = `${backendUrl}/api/cart/create`;
       
       // Use existing cart ID if available, otherwise create new one
       const endpoint = cartId ? `/api/cart/${cartId}/update` : '/api/cart/create';
@@ -128,7 +133,7 @@ const DynamicWidget = ({ onCartUpdate }) => {
             items: enhancedItems,
             totalItems: getTotalItems(),
             totalPrice: getTotalPrice(),
-            cartUrl: `https://nodejs-backend-6y9w8010b-tayos-projects-cec8e285.vercel.app/cart/${finalCartId}`
+            cartUrl: `${backendUrl}/cart/${finalCartId}`
           });
         }
       }
@@ -233,4 +238,5 @@ const DynamicWidget = ({ onCartUpdate }) => {
 };
 
 export default DynamicWidget; 
+
 
