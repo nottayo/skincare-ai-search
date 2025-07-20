@@ -59,6 +59,8 @@ loadCartsFromStorage();
 // Middleware
 const allowedOrigins = [
   'https://frontend-ddxx6bhas-tayos-projects-cec8e285.vercel.app',
+  'https://chatbot-widget-frontend-eed49kk6p-tayos-projects-cec8e285.vercel.app',
+  'https://shopmamatega.com',
   'http://localhost:3000'
 ];
 
