@@ -24,7 +24,7 @@ export default defineConfig({
         },
       },
     },
-    outDir: 'dist-widget',
+    outDir: 'public',
     emptyOutDir: true,
   },
 }); 

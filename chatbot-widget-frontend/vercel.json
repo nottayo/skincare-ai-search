@@ -1,6 +1,6 @@
 {
   "buildCommand": "vite build --config vite.widget.config.js",
-  "outputDirectory": "dist-widget",
+  "outputDirectory": "public",
   "installCommand": "npm install",
   "framework": "vite"
 } 
