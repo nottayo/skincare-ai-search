@@ -24,7 +24,7 @@ export default defineConfig({
         },
       },
     },
-    outDir: 'search-widget',
+    outDir: 'dist-widget',
     emptyOutDir: true,
   },
 }); 
