@@ -227,9 +227,22 @@ app.get('/models', (req, res) => {
 // Main AI chat endpoint (mocked for now)
 app.post('/ask', async (req, res) => {
   try {
+    console.log('[ASK] Request received:', { 
+      hasPrompt: !!req.body.prompt, 
+      hasHistory: !!req.body.history,
+      bodyKeys: Object.keys(req.body)
+    });
+    
     const { prompt = '', history = [], model, name, nameAskedBefore, sessionId, chatId } = req.body;
     const userQ = prompt.trim();
     if (!userQ) return res.status(400).json({ error: 'No prompt received' });
+    
+    // Check critical environment variables
+    console.log('[ASK] Checking env vars:', {
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasShopifyAdmin: !!process.env.SHOPIFY_ADMIN_API,
+      hasStorefront: !!process.env.SHOPIFY_STOREFRONT_TOKEN
+    });
     const sessionKey = sessionId || chatId || 'default';
     const products = await require('./chat-reasoning').productsPromise;
     const { loadChatHistory, saveChatHistory, loadUserProfile, saveUserProfile } = require('./utils');
@@ -494,8 +507,12 @@ Only mention each product once in your answer. Do NOT repeat the product list af
       history: updatedHistory
     });
   } catch (e) {
-    console.error('Error in /ask:', e.message);
-    res.status(500).json({ error: 'Failed to process request' });
+    console.error('[ASK] fatal:', e);
+    console.error('[ASK] stack:', e.stack);
+    return res.status(500).json({
+      error: 'internal_server_error',
+      message: e?.message ?? 'unexpected_failure'
+    });
   }
 });
 
